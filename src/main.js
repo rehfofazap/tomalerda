@@ -874,6 +874,12 @@ try {
   });
   // dois cliques na barra = maximizar / voltar
   document.querySelector(".tbTitle").addEventListener("dblclick", () => win.toggleMaximize());
+  // maximizada = cantos retos; normal = arredondada
+  const syncMax = async () => {
+    try { document.body.classList.toggle("maxed", await win.isMaximized()); } catch {}
+  };
+  win.onResized(syncMax);
+  syncMax();
 } catch (e) {
   console.error(e);
 }
