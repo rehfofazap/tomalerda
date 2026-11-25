@@ -1,0 +1,51 @@
+{
+    "$schema":  "https://schema.tauri.app/config/2",
+    "productName":  "tomalerda",
+    "version":  "0.1.5",
+    "identifier":  "com.tomalerda.app",
+    "build":  {
+                  "frontendDist":  "../src"
+              },
+    "app":  {
+                "withGlobalTauri":  true,
+                "windows":  [
+                                {
+                                    "title":  "tomalerda",
+                                    "width":  1280,
+                                    "height":  820,
+                                    "minWidth":  980,
+                                    "minHeight":  640,
+                                    "backgroundColor":  "#1a0510",
+                                    "decorations":  false,
+                                    "shadow":  true
+                                }
+                            ],
+                "security":  {
+                                 "csp":  "default-src \u0027self\u0027; style-src \u0027self\u0027 \u0027unsafe-inline\u0027; img-src \u0027self\u0027 https://cdn.discordapp.com data: blob:; connect-src ipc: http://ipc.localhost wss://gateway.discord.gg wss://*.discord.gg; object-src \u0027none\u0027; base-uri \u0027none\u0027; frame-src \u0027none\u0027; form-action \u0027none\u0027"
+                             }
+            },
+    "bundle":  {
+                   "active":  true,
+                   "targets":  "all",
+                   "icon":  [
+                                "icons/32x32.png",
+                                "icons/128x128.png",
+                                "icons/128x128@2x.png",
+                                "icons/icon.png",
+                                "icons/icon.ico"
+                            ],
+                   "createUpdaterArtifacts":  true
+               },
+    "plugins":  {
+                    "updater":  {
+                                    "pubkey":  "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRCQzY3OENDNUM5M0I3REUKUldUZXQ1TmN6SGpHUzdYRGNORjFiTndjb3JiSStnOVdnZHppSzZ4b2MvMjhVb0ZiSTRrRk5EMGsK",
+                                    "endpoints":  [
+                                                      "https://rehbet.com.br/tomalerda/latest.json",
+                                                      "https://astrascreenshare.com/tomalerda/latest.json"
+                                                  ],
+                                    "windows":  {
+                                                    "installMode":  "passive"
+                                                }
+                                }
+                }
+}
