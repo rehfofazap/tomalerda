@@ -1,0 +1,15 @@
+# dependências e build
+node_modules/
+src-tauri/target/
+src-tauri/gen/
+
+# chaves e segredos (a chave de assinatura nunca entra no repositório)
+*.key
+*.pem
+.env
+.env.*
+
+# sistema
+.DS_Store
+Thumbs.db
+desktop.ini
