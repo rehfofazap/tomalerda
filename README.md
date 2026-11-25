@@ -4,95 +4,79 @@
 
 # tomalerda
 
-**Apague suas mensagens do Discord com poucos cliques.**
-Privados, servidores, mídias, amigos e muito mais — num app leve, bonito e com temas.
+apaga suas mensagens do discord sem precisar ficar clicando uma por uma 🗑️
 
 [![Baixar](https://img.shields.io/badge/baixar-Windows-ff4fa3?style=for-the-badge&logo=windows)](https://github.com/rehfofazap/tomalerda/releases/latest)
 [![Versão](https://img.shields.io/github/v/release/rehfofazap/tomalerda?style=for-the-badge&color=ff8cc6&label=vers%C3%A3o)](https://github.com/rehfofazap/tomalerda/releases)
-[![Tauri](https://img.shields.io/badge/Tauri-v2-24c8db?style=for-the-badge&logo=tauri)](https://v2.tauri.app)
 [![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-a3acbd?style=for-the-badge)](LICENSE)
 
-<img src="docs/inicio.png" width="820" alt="Tela inicial do tomalerda" />
+<img src="docs/inicio.png" width="820" alt="tomalerda" />
 
 </div>
 
----
+## o que dá pra fazer
 
-## ✨ O que ele faz
+- apagar suas mensagens de um PV, DM ou grupo (pelo ID)
+- limpar o PV com todos os amigos de uma vez
+- limpar todas as DMs abertas
+- apagar num canal ou no servidor inteiro
+- apagar só as que tem uma palavra
+- apagar só mídias e arquivos (fotos, vídeos, áudios...)
+- usar o pacote de dados do discord (`package.zip`) pra achar mensagem que a busca não mostra
+- desfazer todas as amizades, fechar todos os PVs, sair de todos os servidores
+- trocar a casa da hypesquad
+- modo ausente: sai de grupo quando te adicionam, fecha PV, fica afk em call e responde sozinho
 
-| | Função | Como funciona |
-|---|---|---|
-| 💬 | **Privado por ID** | Apaga suas mensagens num PV, DM ou grupo |
-| 👥 | **PVs com todos os amigos** | Abre a conversa com cada amigo e limpa |
-| 📨 | **PVs e DMs abertas** | Limpa tudo que está na sua lista de conversas |
-| 🖥️ | **Servidores** | Um canal específico, ou o servidor inteiro com as menções |
-| 🔑 | **Palavra-chave** | Só as mensagens que tiverem uma palavra |
-| 🖼️ | **Mídias e arquivos** | Fotos, vídeos, áudios e anexos que você mandou |
-| 📦 | **Pacote de dados** | Usa o `package.zip` do Discord pra achar mensagens que a busca não mostra |
-| 🧹 | **Limpar a conta** | Desfazer amizades, fechar PVs, sair de servidores, trocar a casa da HypeSquad |
-| 🌙 | **Modo ausente** | Sai de grupos, fecha PVs, fica AFK em call e responde sozinho enquanto você está fora |
+também tem whitelist (ID que você coloca lá nunca é mexido), filtro por data, delay configurável, trocar de conta sem fechar o app e mostra quanto tempo falta pra terminar.
 
-**E mais:**
-- ⏱️ **Tempo estimado** — mostra quanto falta e a velocidade real ("falta ~12 min · 48 por min")
-- 🛡️ **Whitelist** — IDs de pessoas, canais e servidores que nunca são tocados
-- 📅 **Período** — apague só mensagens entre duas datas
-- 🔁 **Trocar de conta** sem fechar o app
-- 🔐 **Token guardado no Cofre do Windows** — nunca sai do seu PC, só vai pro Discord
-- 🔄 **Atualização automática** — só instala pacotes assinados pela chave do projeto
-- ✅ **Confirmação em dois cliques** em tudo — nada é apagado sem querer
+o token fica salvo no cofre do windows, não vai pra lugar nenhum além do próprio discord.
 
-## 🎨 Temas
+## temas
 
-16 temas, cada um com cores, desenho de fundo e ícone próprios (até o da barra de tarefas muda):
-**cores** — Preto, Rosa, Azul, Roxo, Vermelho, Cinza, Menta, Dourado, Oceano ·
-**personagens** — Hello Kitty, Homem-Aranha, Zero Two, Naruto, One Piece, Dexter, Rick and Morty, Hora de Aventura.
-Mais 6 estilos de painel (vidro, acrílico, neon…) e imagem de fundo personalizada.
+tem 17 temas, cada um com cor, fundo e ícone próprio (o ícone da barra de tarefas muda junto):
+
+preto, rosa, azul, roxo, vermelho, cinza, menta, dourado, oceano, hello kitty, homem-aranha, zero two, naruto, one piece, dexter, rick and morty e hora de aventura
 
 <div align="center">
-<img src="docs/temas.png" width="820" alt="Temas do tomalerda" />
+<img src="docs/temas.png" width="820" alt="temas" />
 <br/><br/>
-<img src="docs/menu-recolhido.png" width="820" alt="Menu recolhido mostrando só os ícones" />
+<img src="docs/menu-recolhido.png" width="820" alt="menu recolhido" />
 </div>
 
-## 📥 Instalar
+## como instalar
 
-1. Baixe o `tomalerda_x.y.z_x64-setup.exe` na página de **[Releases](https://github.com/rehfofazap/tomalerda/releases/latest)**.
-2. Abra e instale. Se aparecer **"O Windows protegeu o computador"**, clique em **Mais informações → Executar assim mesmo** (o instalador não tem certificado pago).
-3. Cole seu token e pronto.
+1. baixa o `.exe` na aba [releases](https://github.com/rehfofazap/tomalerda/releases/latest)
+2. abre e instala. se o windows reclamar ("o windows protegeu o computador"), clica em **mais informações** e depois **executar assim mesmo**
+3. cola seu token e pronto
 
-> **Como pegar IDs:** Discord → Configurações → Avançado → ative o **Modo desenvolvedor**. Depois clique com o botão direito num servidor, canal ou usuário → *Copiar ID*.
+o app avisa sozinho quando sai versão nova.
 
-## 🛠️ Compilar você mesmo
+pra pegar ID de alguma coisa: configurações do discord > avançado > liga o **modo desenvolvedor**, aí é só clicar com o botão direito em qualquer servidor/canal/pessoa e **copiar ID**.
 
-Requisitos: [Rust](https://rustup.rs) (stable), Node.js 18+ e, no Windows, o WebView2 (já vem no 10/11) e o *Desktop development with C++* do Visual Studio Build Tools.
+## compilar
+
+precisa de [rust](https://rustup.rs), node 18+ e o build tools do visual studio (c++).
 
 ```bash
 npm install
-npm run dev      # abre o app em modo desenvolvimento
-npm run build    # gera o instalador em src-tauri/target/release/bundle
+npm run dev     # roda em modo dev
+npm run build   # gera o instalador em src-tauri/target/release/bundle
 ```
 
-> O build gera os pacotes de atualização assinados (`createUpdaterArtifacts`). Pra compilar sem a chave do projeto, desligue essa opção em `src-tauri/tauri.conf.json` ou gere a sua com `npx tauri signer generate`.
+o build tenta assinar os arquivos de atualização. se for compilar por conta própria, desliga o `createUpdaterArtifacts` no `src-tauri/tauri.conf.json` ou gera uma chave sua com `npx tauri signer generate`.
 
-```
-src/                      interface (HTML/CSS/JS puro, sem framework)
-src/temas/                ícones de cada tema
-src-tauri/src/lib.rs      comandos do app: conta, cofre, atualização, ícone do tema
-src-tauri/src/discord.rs  cliente da API do Discord + lógica de exclusão
-```
+feito com tauri v2, a interface é html/css/js puro e a parte do discord fica em `src-tauri/src/discord.rs`.
 
-Rate limit (429) e indexação da busca (202) do Discord são tratados automaticamente.
+## aviso
 
-## ⚠️ Aviso
+o que for apagado não volta, então cuidado.
 
-Tudo que o app apaga é **de verdade** e não volta.
+usar token de conta normal (selfbot) é contra os termos do discord e pode dar ban. usa por sua conta e risco e deixa um delay de pelo menos 1-2s. com token de bot não tem esse problema, mas o bot só mexe nos servidores que ele tá.
 
-Automatizar uma conta de **usuário** (self-bot) vai contra os Termos de Serviço do Discord e pode levar ao banimento da conta. Use delays generosos (1–2 s) e por sua conta e risco. Com token de **bot** não há esse problema, mas o bot só alcança servidores em que está e precisa da permissão *Gerenciar mensagens*.
+**nunca passa seu token pra ninguém.** com ele a pessoa tem acesso total à sua conta.
 
-**Nunca compartilhe seu token:** com ele, qualquer pessoa tem acesso total à sua conta.
-
-Este projeto não tem ligação com o Discord Inc. Os ícones de personagens são homenagens de fã e pertencem aos seus donos.
+não tenho ligação nenhuma com o discord. os personagens dos temas são dos seus donos, é só homenagem.
 
 ---
 
-<div align="center">feito com 💗 por <b>@rehfofazap</b></div>
+<div align="center">by <b>@rehfofazap</b> 💗</div>
