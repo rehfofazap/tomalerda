@@ -190,6 +190,76 @@ fn set_big_icon(w: &tauri::WebviewWindow, img: &tauri::image::Image<'_>) {
     }
 }
 
+/// Monta um .ico (BMP 32 bits com transparência) a partir do RGBA.
+#[cfg(windows)]
+fn ico_bytes(img: &tauri::image::Image<'_>) -> Vec<u8> {
+    let (w, h) = (img.width(), img.height());
+    let rgba = img.rgba();
+    let mask_row = ((w + 31) / 32 * 4) as usize;
+    let data_len = (w * h * 4) as usize + mask_row * h as usize;
+    let mut v = Vec::with_capacity(22 + 40 + data_len);
+    // cabeçalho + 1 entrada
+    v.extend_from_slice(&[0, 0, 1, 0, 1, 0]);
+    v.push(if w >= 256 { 0 } else { w as u8 });
+    v.push(if h >= 256 { 0 } else { h as u8 });
+    v.extend_from_slice(&[0, 0, 1, 0, 32, 0]);
+    v.extend_from_slice(&((40 + data_len) as u32).to_le_bytes());
+    v.extend_from_slice(&22u32.to_le_bytes());
+    // BITMAPINFOHEADER (altura dobrada = cor + máscara)
+    v.extend_from_slice(&40u32.to_le_bytes());
+    v.extend_from_slice(&(w as i32).to_le_bytes());
+    v.extend_from_slice(&((h * 2) as i32).to_le_bytes());
+    v.extend_from_slice(&1u16.to_le_bytes());
+    v.extend_from_slice(&32u16.to_le_bytes());
+    v.extend_from_slice(&[0u8; 4]);
+    v.extend_from_slice(&(data_len as u32).to_le_bytes());
+    v.extend_from_slice(&[0u8; 16]);
+    // pixels de baixo pra cima, em BGRA
+    for y in (0..h).rev() {
+        for x in 0..w {
+            let i = ((y * w + x) * 4) as usize;
+            v.extend_from_slice(&[rgba[i + 2], rgba[i + 1], rgba[i], rgba[i + 3]]);
+        }
+    }
+    v.resize(v.len() + mask_row * h as usize, 0);
+    v
+}
+
+/// Se o tomalerda estiver FIXADO na barra de tarefas, o Windows mostra o ícone
+/// do atalho fixado (e ignora o da janela). Então troca o ícone desse atalho também.
+#[cfg(windows)]
+fn update_pinned_icon(app: &AppHandle, theme: &str, icon: &tauri::image::Image<'_>) {
+    let Ok(appdata) = std::env::var("APPDATA") else { return };
+    let pins = std::path::Path::new(&appdata).join(r"Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar");
+    let pinned = std::fs::read_dir(&pins)
+        .map(|d| d.flatten().any(|e| e.file_name().to_string_lossy().to_lowercase().contains("tomalerda")))
+        .unwrap_or(false);
+    if !pinned {
+        return;
+    }
+    let (Ok(dir), Ok(exe)) = (app.path().app_local_data_dir(), std::env::current_exe()) else { return };
+    let dir = dir.join("icones");
+    let ico = dir.join(format!("{theme}.ico"));
+    if std::fs::create_dir_all(&dir).is_err() || std::fs::write(&ico, ico_bytes(icon)).is_err() {
+        return;
+    }
+    std::thread::spawn(move || {
+        use std::os::windows::process::CommandExt;
+        let script = r#"$sh=New-Object -ComObject WScript.Shell;$m=0;Get-ChildItem -LiteralPath $env:TOMA_PINS -Filter *.lnk|%{$l=$sh.CreateShortcut($_.FullName);if($l.TargetPath -ieq $env:TOMA_EXE -and $l.IconLocation -ne ($env:TOMA_ICO+',0')){$l.IconLocation=$env:TOMA_ICO+',0';$l.Save();$m=1}};exit (3*$m)"#;
+        let out = std::process::Command::new("powershell.exe")
+            .args(["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", script])
+            .env("TOMA_PINS", &pins)
+            .env("TOMA_EXE", &exe)
+            .env("TOMA_ICO", &ico)
+            .creation_flags(0x0800_0000) // sem janela
+            .status();
+        if matches!(out, Ok(s) if s.code() == Some(3)) {
+            use windows_sys::Win32::UI::Shell::{SHChangeNotify, SHCNE_ASSOCCHANGED, SHCNF_IDLIST};
+            unsafe { SHChangeNotify(SHCNE_ASSOCCHANGED as _, SHCNF_IDLIST, std::ptr::null(), std::ptr::null()) };
+        }
+    });
+}
+
 /// Troca o ícone da janela (barra de tarefas) e o do relógio pelo do tema.
 /// Os ícones já vão embutidos no app (src/temas); tema sem ícone volta pro padrão.
 #[tauri::command]
@@ -210,6 +280,8 @@ fn set_theme_icon(app: AppHandle, theme: String) -> Result<(), String> {
         #[cfg(windows)]
         set_big_icon(&w, &icon);
     }
+    #[cfg(windows)]
+    update_pinned_icon(&app, &theme, &icon);
     if let Some(tray) = app.tray_by_id("main") {
         let _ = tray.set_icon(Some(icon));
     }

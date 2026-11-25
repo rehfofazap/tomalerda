@@ -1,6 +1,6 @@
 [package]
 name = "tomalerda"
-version = "0.1.6"
+version = "0.1.7"
 description = "tomalerda"
 edition = "2021"
 
@@ -24,7 +24,7 @@ keyring = { version = "3", features = ["windows-native"] }
 zip = { version = "2", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging", "Win32_UI_Shell"] }
 
 [profile.release]
 codegen-units = 8
