@@ -104,7 +104,7 @@
 [data-theme="dexter"] {
   --a: #d3121f; --a2: #ff9aa0; --on-a: #fff;
   --grad: linear-gradient(120deg, #8a0710, #d3121f 55%, #ff3b45);
-  --logo: linear-gradient(100deg, #ffe3e4, #ff5a63 40%, #b00b16 85%);
+  --logo: linear-gradient(100deg, #ffe3e4, #ff8a90 45%, #ff3b45 90%);
   --bg: #080505; --b1: rgba(200, 14, 28, .5); --b2: rgba(120, 5, 12, .45); --b3: rgba(255, 255, 255, .05);
 }
 [data-theme="aventura"] {
@@ -181,7 +181,21 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; }
-body { background: var(--bg); transition: background .5s; }
+/* janela arredondada: a janela do Windows é transparente e o app é recortado aqui.
+   transform faz os elementos "fixed" (fundo, topo, abertura) também serem recortados. */
+html { background: transparent; }
+body {
+  --win-r: 14px;
+  background: var(--bg); transition: background .5s;
+  border-radius: var(--win-r); transform: translateZ(0);
+}
+/* contorno fininho por cima de tudo, pra borda arredondada ficar nítida */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  border-radius: var(--win-r); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .09);
+}
+/* maximizada: cantos retos pra encaixar na tela */
+body.maxed { --win-r: 0px; }
 button, input, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
@@ -413,7 +427,7 @@ body.locked .app { pointer-events: none; user-select: none; }
    ===================================================================== */
 .welcome { margin: 2px 2px 4px; }
 .welcome h2 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
-.welcome h2 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.welcome h2 span { background: var(--logo); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .welcome p { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; }
 
 .rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -599,7 +613,7 @@ input[type=range] { flex: 1; accent-color: var(--a); }
 .st.skip { --c: var(--amber); }
 .st svg { width: 15px; height: 15px; fill: none; stroke: var(--c); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; opacity: .85; margin-bottom: 2px; }
 .st b { font-size: 21px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.15; color: var(--text); }
-.st.done b { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.st.done b { background: var(--logo); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .st span { font-size: 10.5px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--dim); }
 
 /* processo atual + barra */
