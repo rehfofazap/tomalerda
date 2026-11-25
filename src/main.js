@@ -903,6 +903,13 @@ try {
     await win.hide();
     log("Em segundo plano — clique no ícone perto do relógio para voltar.", "info");
   });
+  // versão instalada (vem do próprio app) na barra lateral e na abertura
+  window.__TAURI__.app.getVersion().then((v) => {
+    for (const [id, txt] of [["appVer", `v${v}`], ["spVer", `versão ${v}`]]) {
+      const el = $(id);
+      if (el) { el.textContent = txt; el.hidden = false; }
+    }
+  }).catch(() => {});
   // dois cliques na barra = maximizar / voltar
   document.querySelector(".tbTitle").addEventListener("dblclick", () => win.toggleMaximize());
   // maximizada = cantos retos; normal = arredondada
