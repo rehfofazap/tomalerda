@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="rosa" data-style="vidro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tomalerda</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- fundo: luzes na cor do tema + desenho do tema -->
+  <div class="bgfx">
+    <i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>
+    <div class="pattern" id="pattern"></div>
+    <div class="bgImg" id="bgImg"></div>
+  </div>
+
+  <!-- barra do topo (própria, no lugar da do Windows) -->
+  <header class="titlebar" data-tauri-drag-region>
+    <div class="tbTitle" data-tauri-drag-region>
+      <img src="icon64.png" alt="" class="tbIcon" data-tauri-drag-region />
+      <span class="tbName" data-tauri-drag-region>tomalerda</span>
+    </div>
+    <!-- bolinhas no lado direito: fechar fica no canto -->
+    <div class="lights">
+      <button id="wHide" class="light green" title="Segundo plano (fica perto do relógio)"><svg viewBox="0 0 12 12"><path d="M6 3v5.5M3.5 6.5 6 9l2.5-2.5"/></svg></button>
+      <button id="wMin" class="light blue" title="Minimizar"><svg viewBox="0 0 12 12"><path d="M3 6h6"/></svg></button>
+      <button id="wClose" class="light red" title="Fechar"><svg viewBox="0 0 12 12"><path d="m3.5 3.5 5 5M8.5 3.5l-5 5"/></svg></button>
+    </div>
+  </header>
+  <div class="toast" id="toast"></div>
+
+  <!-- tela de abertura -->
+  <div class="splash" id="splash">
+    <div class="spHearts" id="spHearts"></div>
+    <div class="spCard">
+      <div class="spPic"><span class="spRing"></span><img src="kitty.png" alt="" /></div>
+      <h1 class="spLogo">tomalerda</h1>
+      <p class="spBy">by: @rehfofazap</p>
+      <div class="spBar"><div id="spBar"></div></div>
+      <div class="spInfo"><span id="spMsg">acordando…</span><b id="spPct">0%</b></div>
+    </div>
+  </div>
+
+  <!-- entrada obrigatória: o app só libera depois de conectar um token válido -->
+  <div class="gate" id="gate">
+    <div class="gateBox">
+      <img src="kitty.png" alt="" class="gatePic" />
+      <h1 class="spLogo gateLogo">tomalerda</h1>
+      <p class="gateSub" id="gateSub">Conecte seu token do Discord pra começar.</p>
+      <div id="gateSlot"></div>
+      <button class="gateBack" id="gateBack" hidden>← Voltar pra <b id="gateBackName"></b></button>
+      <p class="gateWarn">Tudo que o app faz é <b>de verdade</b> — mensagens apagadas não voltam.</p>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- ============ MENU ============ -->
+    <aside class="sidebar" id="sidebar">
+      <button class="sideToggle" id="sideToggle" title="Recolher menu"><svg viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"/></svg></button>
+      <div class="brand"><img src="kitty.png" alt="" class="brandPic" /><span class="logo">tomalerda</span><small class="by">by: @rehfofazap</small></div>
+
+      <nav>
+        <button class="navItem active" data-page="home"><i data-i="home"></i>Início</button>
+
+        <p class="navTitle">Mensagens</p>
+        <button class="navItem" data-page="dm"><i data-i="chat"></i>Privados</button>
+        <button class="navItem" data-page="servers"><i data-i="server"></i>Servidores</button>
+        <button class="navItem" data-page="keyword"><i data-i="key"></i>Palavra-chave</button>
+        <button class="navItem" data-page="media"><i data-i="image"></i>Mídias e arquivos</button>
+        <button class="navItem" data-page="package"><i data-i="box"></i>Pacote de dados</button>
+
+        <p class="navTitle">Conta</p>
+        <button class="navItem" data-page="friends"><i data-i="users"></i>Amigos e PVs</button>
+        <button class="navItem" data-page="leave"><i data-i="logout"></i>Sair de servidores</button>
+        <button class="navItem" data-page="hypesquad"><i data-i="gem"></i>HypeSquad</button>
+
+        <p class="navTitle">Automático</p>
+        <button class="navItem" data-page="idle"><i data-i="moon"></i>Modo ausente<span class="live" id="idleDot"></span></button>
+
+        <p class="navTitle">Ajustes</p>
+        <button class="navItem" data-page="settings"><i data-i="lock"></i>Conta e token</button>
+        <button class="navItem" data-page="prefs"><i data-i="sliders"></i>Preferências</button>
+        <button class="navItem" data-page="look"><i data-i="palette"></i>Aparência</button>
+      </nav>
+
+      <!-- aparece só quando tem versão nova -->
+      <button class="updCard" id="updBtn" hidden title="Instalar a versão nova">
+        <span class="updIco"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></span>
+        <span class="updTxt"><b id="updText">Atualizar</b><small>versão nova disponível</small></span>
+      </button>
+
+      <div class="meRow">
+        <button class="me" data-go="settings">
+          <div class="avatar" id="avatar">?</div>
+          <div class="meText"><b id="userName">Desconectado</b><small id="userTag">clique pra conectar</small></div>
+        </button>
+        <button class="swapBtn" id="swapBtn" title="Trocar de conta"><svg viewBox="0 0 24 24"><path d="M7 4 3 8l4 4M3 8h13a4 4 0 0 1 4 4M17 20l4-4-4-4M21 16H8a4 4 0 0 1-4-4"/></svg></button>
+      </div>
+    </aside>
+
+    <!-- ============ CONTEÚDO ============ -->
+    <main class="main">
+      <header class="topbar">
+        <div class="pageIcon" id="pageIcon"></div>
+        <div class="titles">
+          <h1 id="pageTitle">Início</h1>
+          <p id="pageSub"></p>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="col">
+
+          <!-- ================= INÍCIO ================= -->
+          <section class="page active" data-page="home">
+            <div class="welcome">
+              <h2>Oi, <span id="helloName">visitante</span></h2>
+              <p id="helloSub">Conecte seu token em Conta e token pra começar.</p>
+            </div>
+
+            <p class="section">Apagar mensagens</p>
+            <div class="rows">
+              <button class="row" data-go="dm" data-focus="cardDmId"><span class="rIco"><i data-i="hash"></i></span><span class="rText"><b>Privado por ID</b><small>Um PV, DM ou grupo</small></span><i data-i="arrow"></i></button>
+              <button class="row" data-go="dm" data-focus="optFriends"><span class="rIco"><i data-i="users"></i></span><span class="rText"><b>PV com todos os amigos</b><small>Uma conversa por amigo</small></span><i data-i="arrow"></i></button>
+              <button class="row" data-go="dm" data-focus="optDms"><span class="rIco"><i data-i="chat"></i></span><span class="rText"><b>PVs e DMs abertas</b><small>Tudo que está na sua lista</small></span><i data-i="arrow"></i></button>
+              <button class="row" data-go="servers" data-focus="cardChannel"><span class="rIco"><i data-i="server"></i></span><span class="rText"><b>Chat de servidor</b><small>Um canal específico</small></span><i data-i="arrow"></i></button>
+              <button class="row" data-go="servers" data-focus="cardGuild"><span class="rIco"><i data-i="at"></i></span><span class="rText"><b>Mensagens e menções</b><small>O servidor inteiro</small></span><i data-i="arrow"></i></button>
+              <button class="row" data-go="keyword"><span class="rIco"><i data-i="key"></i></span><span class="rText"><b>Por palavra-chave</b><small>Só o que tiver a palavra</small></span><i data-i="arrow"></i></button>
+              <button class="row" data-go="media"><span class="rIco"><i data-i="image"></i></span><span class="rText"><b>Mídias e arquivos</b><small>Fotos, vídeos e anexos</small></span><i data-i="arrow"></i></button>
+              <button class="row" data-go="package"><span class="rIco"><i data-i="box"></i></span><span class="rText"><b>Pacote de dados</b><small>Usa o package.zip</small></span><i data-i="arrow"></i></button>
+            </div>
+
+            <p class="section">Limpar a conta</p>
+            <div class="rows">
+              <button class="row" data-go="friends" data-focus="cardUnfriend"><span class="rIco"><i data-i="userMinus"></i></span><span class="rText"><b>Remover todos os amigos</b><small>Desfaz as amizades</small></span><i data-i="arrow"></i></button>
+              <button class="row" data-go="friends" data-focus="cardCloseDms"><span class="rIco"><i data-i="xCircle"></i></span><span class="rText"><b>Fechar todos os PVs</b><small>E sair dos grupos, se quiser</small></span><i data-i="arrow"></i></button>
+              <button class="row" data-go="leave"><span class="rIco"><i data-i="logout"></i></span><span class="rText"><b>Sair de todos os servidores</b><small>Menos os seus</small></span><i data-i="arrow"></i></button>
+              <button class="row" data-go="hypesquad"><span class="rIco"><i data-i="gem"></i></span><span class="rText"><b>Casa do HypeSquad</b><small>Trocar ou sair</small></span><i data-i="arrow"></i></button>
+            </div>
+
+            <p class="section">Automático</p>
+            <div class="rows">
+              <button class="row" data-go="idle"><span class="rIco"><i data-i="moon"></i></span><span class="rText"><b>Modo ausente</b><small>Sai de grupos, fecha PVs, AFK em call e resposta automática</small></span><i data-i="arrow"></i></button>
+            </div>
+          </section>
+
+          <!-- ================= PRIVADOS ================= -->
+          <section class="page" data-page="dm">
+            <div class="card" id="cardDmId">
+              <div class="cardHead">
+                <b>Apagar privado por ID</b>
+                <small>Pode ser o ID da conversa ou o ID da pessoa</small>
+              </div>
+              <div class="inputRow">
+                <input id="dmId" placeholder="ID do PV, do grupo ou da pessoa" />
+                <button class="iconBtn" id="dmGo" title="Apagar agora"><i data-i="trash"></i></button>
+              </div>
+            </div>
+
+            <p class="section">Vários de uma vez</p>
+            <label class="option" id="optFriends">
+              <span class="ico"><i data-i="users"></i></span>
+              <div class="optText"><b>PV com todos os amigos</b><small>Abre a conversa com cada amigo e apaga</small></div>
+              <input type="checkbox" class="task" value="friends" />
+              <span class="box"></span>
+            </label>
+            <label class="option" id="optDms">
+              <span class="ico"><i data-i="chat"></i></span>
+              <div class="optText"><b>PVs e DMs abertas</b><small>Cada conversa e grupo da sua lista</small></div>
+              <input type="checkbox" class="task" value="dms" />
+              <span class="box"></span>
+            </label>
+            <button class="primary" id="startBtn">Iniciar (0/2)</button>
+          </section>
+
+          <!-- ================= SERVIDORES ================= -->
+          <section class="page" data-page="servers">
+            <div class="card" id="cardChannel">
+              <div class="cardHead">
+                <b>Um canal</b>
+                <small>Funciona com usuário ou bot</small>
+              </div>
+              <div class="stack">
+                <input id="chId" placeholder="ID do canal" />
+                <div class="two">
+                  <input id="chGuild" placeholder="ID do servidor (opcional)" />
+                  <input id="authorId" placeholder="ID do autor (vazio = você)" />
+                </div>
+              </div>
+              <button class="primary" id="chBtn">Apagar neste canal</button>
+            </div>
+
+            <div class="card" id="cardGuild">
+              <div class="cardHead">
+                <b>Servidor inteiro</b>
+                <small>Suas mensagens em todos os canais</small>
+              </div>
+              <input id="guildId" placeholder="ID do servidor" />
+              <div class="switchRow">
+                <div><b>Limpar também as menções</b><small>Esvazia a aba de menções desse servidor</small></div>
+                <label class="toggle"><input type="checkbox" id="alsoMentions" checked /><span></span></label>
+              </div>
+              <button class="primary" id="serverBtn">Apagar no servidor</button>
+            </div>
+          </section>
+
+          <!-- ================= PALAVRA-CHAVE ================= -->
+          <section class="page" data-page="keyword">
+            <div class="card">
+              <div class="cardHead">
+                <b>Qual palavra?</b>
+                <small>Maiúsculas e minúsculas tanto faz</small>
+              </div>
+              <input id="kwText" placeholder="ex: meu número, endereço, nome..." />
+              <p class="label">Onde procurar</p>
+              <div class="segmented" id="kwWhere">
+                <button data-v="channel" class="on">Um PV ou canal</button>
+                <button data-v="dms">Todos os PVs</button>
+                <button data-v="guild">Um servidor</button>
+              </div>
+              <input id="kwId" class="targetId" />
+              <button class="primary" id="kwBtn">Apagar com essa palavra</button>
+            </div>
+          </section>
+
+          <!-- ================= MÍDIAS ================= -->
+          <section class="page" data-page="media">
+            <div class="card">
+              <div class="cardHead">
+                <b>Fotos, vídeos, áudios e arquivos</b>
+                <small>Só mensagens com anexo — texto puro fica</small>
+              </div>
+              <div class="mediaKinds">
+                <span><i data-i="image"></i>Fotos</span>
+                <span><i data-i="video"></i>Vídeos</span>
+                <span><i data-i="mic"></i>Áudios</span>
+                <span><i data-i="file"></i>Arquivos</span>
+              </div>
+              <p class="label">Onde procurar</p>
+              <div class="segmented" id="mdWhere">
+                <button data-v="channel" class="on">Um PV ou canal</button>
+                <button data-v="dms">Todos os PVs</button>
+                <button data-v="guild">Um servidor</button>
+              </div>
+              <input id="mdId" class="targetId" />
+              <button class="primary" id="mdBtn">Apagar mídias e arquivos</button>
+            </div>
+          </section>
+
+          <!-- ================= PACOTE ================= -->
+          <section class="page" data-page="package">
+            <ol class="steps">
+              <li><span>1</span><div><b>Peça seus dados</b><small>Configurações → Dados e privacidade → Solicitar dados (marque Mensagens)</small></div></li>
+              <li><span>2</span><div><b>Baixe o package.zip</b><small>Chega por e-mail em alguns dias</small></div></li>
+              <li><span>3</span><div><b>Escolha aqui</b><small>Apaga pelo ID, até em PVs já fechados</small></div></li>
+            </ol>
+            <div class="card">
+              <input id="pkgPath" placeholder="Caminho do package.zip ou da pasta" />
+              <div class="pickRow">
+                <button class="secondary" id="pkgZip"><i data-i="box"></i>Escolher .zip</button>
+                <button class="secondary" id="pkgDir"><i data-i="folder"></i>Escolher pasta</button>
+              </div>
+              <p class="label">O que apagar</p>
+              <div class="segmented" id="pkgScope">
+                <button data-v="all" class="on">Tudo</button>
+                <button data-v="dms">Só PVs e grupos</button>
+                <button data-v="guilds">Só servidores</button>
+              </div>
+              <button class="primary" id="pkgBtn">Apagar pelo pacote</button>
+            </div>
+          </section>
+
+          <!-- ================= AMIGOS E PVs ================= -->
+          <section class="page" data-page="friends">
+            <div class="card" id="cardUnfriend">
+              <div class="cardHead">
+                <b>Remover todos os amigos</b>
+                <small>Quem estiver na whitelist fica</small>
+              </div>
+              <button class="primary" id="unfriendBtn">Remover todos os amigos</button>
+            </div>
+            <div class="card" id="cardCloseDms">
+              <div class="cardHead">
+                <b>Fechar todos os PVs</b>
+                <small>Só tira da lista — as mensagens continuam lá</small>
+              </div>
+              <div class="switchRow">
+                <div><b>Sair também dos grupos</b><small>Opcional</small></div>
+                <label class="toggle"><input type="checkbox" id="leaveGroups" /><span></span></label>
+              </div>
+              <button class="primary" id="closeBtn">Fechar todos os PVs</button>
+            </div>
+          </section>
+
+          <!-- ================= SAIR DE SERVIDORES ================= -->
+          <section class="page" data-page="leave">
+            <div class="card">
+              <div class="cardHead">
+                <b>Sair de todos os servidores</b>
+                <small>Funciona com usuário ou bot</small>
+              </div>
+              <ul class="checks">
+                <li><i data-i="check"></i>Servidores que você é dono são pulados</li>
+                <li><i data-i="check"></i>Pra ficar em algum, ponha o ID dele na whitelist</li>
+                <li><i data-i="check"></i>Pede um segundo clique pra confirmar antes de sair</li>
+              </ul>
+              <button class="primary" id="leaveBtn">Sair de todos os servidores</button>
+            </div>
+          </section>
+
+          <!-- ================= HYPESQUAD ================= -->
+          <section class="page" data-page="hypesquad">
+            <div class="houses">
+              <button class="house bravery" data-house="1"><span class="hIco"><i data-i="gem"></i></span><b>Bravery</b><small>Bravura</small></button>
+              <button class="house brilliance" data-house="2"><span class="hIco"><i data-i="gem"></i></span><b>Brilliance</b><small>Brilho</small></button>
+              <button class="house balance" data-house="3"><span class="hIco"><i data-i="gem"></i></span><b>Balance</b><small>Equilíbrio</small></button>
+            </div>
+            <div class="houseFoot">
+              <span class="hint" id="houseMsg">Clique numa casa pra entrar nela.</span>
+              <button class="link" id="houseRemove">Sair da HypeSquad</button>
+            </div>
+          </section>
+
+          <!-- ================= MODO AUSENTE ================= -->
+          <section class="page" data-page="idle">
+            <div class="card idleHero">
+              <span class="bigDot" id="idleBig"><i data-i="moon"></i></span>
+              <div class="idleText"><b id="idleTitle">Desligado</b><small id="idleSub">Funciona enquanto o app estiver aberto.</small></div>
+              <button class="primary" id="idleBtn">Ligar</button>
+            </div>
+            <div class="miniStats">
+              <div><b id="iGroups">0</b><span>grupos saídos</span></div>
+              <div><b id="iClosed">0</b><span>PVs fechados</span></div>
+              <div><b id="iReplies">0</b><span>respostas</span></div>
+            </div>
+
+            <div class="card list">
+              <div class="switchRow">
+                <div><b>Sair de grupos quando me adicionarem</b><small>Sai na hora, sem avisar</small></div>
+                <label class="toggle"><input type="checkbox" id="idLeaveGroups" /><span></span></label>
+              </div>
+              <div class="switchRow">
+                <div><b>Fechar o PV quando alguém me chamar</b><small>A conversa sai da lista</small></div>
+                <label class="toggle"><input type="checkbox" id="idClose" /><span></span></label>
+              </div>
+              <div class="switchRow">
+                <div><b>Ficar AFK em call</b><small>Volta sozinho se cair</small></div>
+                <label class="toggle"><input type="checkbox" id="idAfk" /><span></span></label>
+              </div>
+              <div class="sub" id="afkBox">
+                <div class="two">
+                  <input id="idGuild" placeholder="ID do servidor (vazio = call de PV)" />
+                  <input id="idChannel" placeholder="ID do canal de voz" />
+                </div>
+                <div class="miniToggles">
+                  <label class="mini"><input type="checkbox" id="idMute" checked /><span></span>Mutado</label>
+                  <label class="mini"><input type="checkbox" id="idDeaf" checked /><span></span>Ensurdecido</label>
+                </div>
+              </div>
+              <div class="switchRow">
+                <div><b>Responder automaticamente</b><small>Uma vez a cada 10 min por conversa</small></div>
+                <label class="toggle"><input type="checkbox" id="idReply" /><span></span></label>
+              </div>
+              <div class="sub" id="replyBox">
+                <textarea id="idMsg" rows="3" maxlength="2000" placeholder="ex: tô ausente agora, respondo mais tarde"></textarea>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================= CONTA ================= -->
+          <section class="page" data-page="settings">
+            <div class="card" id="tokenCard">
+              <div class="cardHead">
+                <b>Token</b>
+                <small>Nunca é enviado pra lugar nenhum além do Discord</small>
+              </div>
+              <div class="inputRow">
+                <input id="token" type="password" placeholder="Cole seu token aqui" autocomplete="off" />
+                <button class="iconBtn" id="eyeBtn" title="Mostrar/ocultar"><i data-i="eye"></i></button>
+              </div>
+              <div class="segmented" id="tokenType">
+                <button data-v="user" class="on">Usuário</button>
+                <button data-v="bot">Bot</button>
+              </div>
+              <div class="switchRow">
+                <div><b>Lembrar neste PC</b><small>Guarda no Cofre de credenciais do Windows, protegido pela sua conta</small></div>
+                <label class="toggle"><input type="checkbox" id="remember" /><span></span></label>
+              </div>
+              <button class="primary" id="checkBtn">Conectar</button>
+              <p class="hint" id="account"></p>
+              <button class="link switchLink" id="switchBtn" hidden>Trocar de conta</button>
+            </div>
+          </section>
+
+          <!-- ================= PREFERÊNCIAS ================= -->
+          <section class="page" data-page="prefs">
+            <div class="card list">
+              <div class="switchRow">
+                <div><b>Usar whitelist</b><small>Nunca mexe nos IDs protegidos abaixo</small></div>
+                <label class="toggle"><input type="checkbox" id="useWhitelist" /><span></span></label>
+              </div>
+              <div class="switchRow">
+                <div><b>Delay customizado</b><small>Tempo entre cada ação — padrão 1,2 s</small></div>
+                <label class="toggle"><input type="checkbox" id="useDelay" /><span></span></label>
+              </div>
+              <div class="sub delayBox" id="delayBox">
+                <input type="range" id="delay" min="300" max="5000" step="100" value="1200" />
+                <span id="delayVal">1200 ms</span>
+              </div>
+              <div class="switchRow">
+                <div><b>Só um período</b><small>Apaga só entre duas datas</small></div>
+                <label class="toggle"><input type="checkbox" id="useDates" /><span></span></label>
+              </div>
+              <div class="sub two dateBox" id="dateBox">
+                <input type="date" id="after" title="De" />
+                <input type="date" id="before" title="Até" />
+              </div>
+            </div>
+
+            <p class="section">Whitelist</p>
+            <div class="card">
+              <div class="inputRow">
+                <input id="wlInput" placeholder="ID de pessoa, conversa, canal ou servidor" />
+                <button class="iconBtn" id="wlAdd" title="Adicionar"><i data-i="plus"></i></button>
+              </div>
+              <ul class="chips" id="wlList"></ul>
+            </div>
+          </section>
+
+          <!-- ================= APARÊNCIA ================= -->
+          <section class="page" data-page="look">
+          <section class="page" data-page="look">
+            <p class="section">Cores</p>
+            <div class="themes">
+              <button class="theme" data-t="preto" style="--c1:#f4f4f5;--c2:#52525b;--c0:#050505"><span class="tPrev"><i></i><i></i><i></i></span><b>Preto</b></button>
+              <button class="theme" data-t="rosa" style="--c1:#ff4fa3;--c2:#ffb3d9;--c0:#1a0510"><span class="tPrev"><i></i><i></i><i></i></span><b>Rosa</b></button>
+              <button class="theme" data-t="azul" style="--c1:#3d7bff;--c2:#8fd3ff;--c0:#040b22"><span class="tPrev"><i></i><i></i><i></i></span><b>Azul</b></button>
+              <button class="theme" data-t="roxo" style="--c1:#8b5cff;--c2:#d4b8ff;--c0:#0c0522"><span class="tPrev"><i></i><i></i><i></i></span><b>Roxo</b></button>
+              <button class="theme" data-t="vermelho" style="--c1:#f05a5e;--c2:#ffb3b5;--c0:#1c0607"><span class="tPrev"><i></i><i></i><i></i></span><b>Vermelho</b></button>
+              <button class="theme" data-t="cinza" style="--c1:#a3acbd;--c2:#e2e6ee;--c0:#15171c"><span class="tPrev"><i></i><i></i><i></i></span><b>Cinza</b></button>
+              <button class="theme" data-t="menta" style="--c1:#2ee6a6;--c2:#b8ffe4;--c0:#03140f"><span class="tPrev"><i></i><i></i><i></i></span><b>Menta</b></button>
+              <button class="theme" data-t="dourado" style="--c1:#f5b83d;--c2:#ffe7a8;--c0:#140d02"><span class="tPrev"><i></i><i></i><i></i></span><b>Dourado</b></button>
+              <button class="theme" data-t="oceano" style="--c1:#19c6d8;--c2:#a8f1ff;--c0:#02121a"><span class="tPrev"><i></i><i></i><i></i></span><b>Oceano</b></button>
+            </div>
+
+            <p class="section">Personagens</p>
+            <div class="themes">
+              <button class="theme" data-t="kitty" style="--c1:#ff5c9d;--c2:#ffd1e3;--c0:#3a1026"><span class="tPrev"><em>🎀</em><i></i><i></i><i></i></span><b>Hello Kitty</b></button>
+              <button class="theme" data-t="aranha" style="--c1:#e8253a;--c2:#3b6cff;--c0:#070b1c"><span class="tPrev"><em>🕸️</em><i></i><i></i><i></i></span><b>Homem-Aranha</b></button>
+              <button class="theme" data-t="zerotwo" style="--c1:#ff2d55;--c2:#ff9fb8;--c0:#1a050c"><span class="tPrev"><em>🌸</em><i></i><i></i><i></i></span><b>Zero Two</b></button>
+              <button class="theme" data-t="naruto" style="--c1:#ff8a1f;--c2:#ffd08a;--c0:#120a04"><span class="tPrev"><em>🍥</em><i></i><i></i><i></i></span><b>Naruto</b></button>
+              <button class="theme" data-t="onepiece" style="--c1:#f2b21b;--c2:#d42a2a;--c0:#0b0906"><span class="tPrev"><em>🏴‍☠️</em><i></i><i></i><i></i></span><b>One Piece</b></button>
+              <button class="theme" data-t="dexter" style="--c1:#d3121f;--c2:#ff9aa0;--c0:#080505"><span class="tPrev"><em>🩸</em><i></i><i></i><i></i></span><b>Dexter</b></button>
+              <button class="theme" data-t="rick" style="--c1:#97ce4c;--c2:#44c2e6;--c0:#04120c"><span class="tPrev"><em>🛸</em><i></i><i></i><i></i></span><b>Rick and Morty</b></button>
+              <button class="theme" data-t="aventura" style="--c1:#3ec1f3;--c2:#ffd23f;--c0:#061a2a"><span class="tPrev"><em>🌈</em><i></i><i></i><i></i></span><b>Hora de Aventura</b></button>
+            </div>
+
+            <p class="section">Estilo dos painéis</p>
+            <div class="styles">
+              <button class="style" data-s="solido"><span class="sPrev"></span><b>Sólido</b><small>Sem transparência</small></button>
+              <button class="style" data-s="translucido"><span class="sPrev"></span><b>Translúcido</b><small>Leve, dá pra ver o fundo</small></button>
+              <button class="style" data-s="vidro"><span class="sPrev"></span><b>Vidro</b><small>Fosco e desfocado</small></button>
+              <button class="style" data-s="glass"><span class="sPrev"></span><b>Efeito glass</b><small>Vidro forte com brilho</small></button>
+              <button class="style" data-s="acrilico"><span class="sPrev"></span><b>Acrílico</b><small>Vidro tingido na cor</small></button>
+              <button class="style" data-s="neon"><span class="sPrev"></span><b>Neon</b><small>Bordas que brilham</small></button>
+            </div>
+
+            <p class="section">Fundo personalizado</p>
+            <div class="card list">
+              <div class="bgPick">
+                <div class="bgThumb" id="bgThumb"><span>sem imagem</span></div>
+                <div class="bgInfo">
+                  <b>Imagem ou GIF de fundo</b>
+                  <small>PNG, JPG, WEBP ou GIF animado, até 30 MB. Fica só neste PC.</small>
+                  <div class="bgBtns">
+                    <button class="primary small" id="bgChoose">Escolher arquivo</button>
+                    <button class="ghost small" id="bgRemove">Remover</button>
+                  </div>
+                  <input type="file" id="bgFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
+                </div>
+              </div>
+              <div class="sliderRow"><span>Desfoque</span><input type="range" id="bgBlur" min="0" max="30" value="6" /><em id="bgBlurV">6</em></div>
+              <div class="sliderRow"><span>Escurecer</span><input type="range" id="bgDim" min="0" max="90" value="45" /><em id="bgDimV">45%</em></div>
+            </div>
+
+            <p class="section">Extras</p>
+            <div class="card list">
+              <div class="switchRow">
+                <div><b>Luzes animadas no fundo</b><small>As manchas de cor se mexem devagar</small></div>
+                <label class="toggle"><input type="checkbox" id="lookMotion" checked /><span></span></label>
+              </div>
+              <div class="switchRow">
+                <div><b>Tela de abertura</b><small>Animação com barra de % ao abrir o app</small></div>
+                <label class="toggle"><input type="checkbox" id="lookSplash" checked /><span></span></label>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ---------- atividade ---------- -->
+        <aside class="activity">
+          <div class="actHead">
+            <span class="actIco"><i data-i="pulse"></i></span>
+            <b>Atividade</b>
+            <span class="status" id="statusPill"><span class="dot" id="statusDot"></span><span id="statusText">Parado</span></span>
+          </div>
+          <div class="stats">
+            <div class="st seen"><i data-i="eye"></i><b id="sScanned">0</b><span>vistas</span></div>
+            <div class="st done"><i data-i="check"></i><b id="sDeleted">0</b><span id="lDeleted">feitas</span></div>
+            <div class="st skip"><i data-i="skip"></i><b id="sSkipped">0</b><span>puladas</span></div>
+          </div>
+          <div class="now">
+            <div class="nowTop"><span id="taskLabel">Nenhum processo</span><b id="pct"></b></div>
+            <div class="bar"><div id="bar"></div></div>
+            <div class="nowFoot"><span id="eta"></span><span id="rate"></span></div>
+          </div>
+          <div class="logHead">
+            <small>Registro</small>
+            <button class="link" id="clearLog">limpar</button>
+          </div>
+          <ol id="log"></ol>
+          <button class="danger" id="stopBtn" disabled><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>Parar</button>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
