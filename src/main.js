@@ -720,6 +720,37 @@ const splat = (x, y, s, o) =>
   `<g transform='translate(${x} ${y}) scale(${s})' fill='#ff2a36' fill-opacity='${o}'>` +
   `<circle r='9'/><circle cx='12' cy='-5' r='4'/><circle cx='-11' cy='7' r='3.5'/><circle cx='4' cy='13' r='2.5'/>` +
   `<circle cx='-16' cy='-8' r='2'/><circle cx='20' cy='6' r='1.8'/><circle cx='-3' cy='-17' r='1.6'/><circle cx='25' cy='-12' r='1.2'/></g>`;
+// Rick and Morty: espaço — saturno, planetas com cratera, portal verde, disco voador e estrelas
+const saturn = (x, y, s, o, r = -18) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round'>` +
+  `<path d='M-30 0A30 8 0 0 1 30 0' stroke-opacity='${o * 0.8}'/>` +
+  `<circle r='15' fill='white' fill-opacity='${o}' stroke='none'/>` +
+  `<path d='M-11-6h22M-14 1h28' stroke-opacity='${o * 0.7}' stroke-width='1.4'/>` +
+  `<path d='M30 0A30 8 0 0 1-30 0' stroke-opacity='${o * 1.6}'/></g>`;
+const planet = (x, y, s, o) =>
+  `<g transform='translate(${x} ${y}) scale(${s})'><circle r='12' fill='white' fill-opacity='${o}'/>` +
+  `<circle cx='-4' cy='-3' r='3' fill='black' fill-opacity='.25'/><circle cx='5' cy='4' r='2' fill='black' fill-opacity='.22'/><circle cx='3' cy='-7' r='1.3' fill='black' fill-opacity='.2'/></g>`;
+function portal(x, y, s, o) {
+  let d = "";
+  for (let k = 0; k <= 48; k++) {
+    const t = (k / 48) * Math.PI * 2, r = 22 + Math.sin(t * 5) * 2.2 + Math.cos(t * 3) * 1.6;
+    d += `${k ? "L" : "M"}${(Math.cos(t) * r).toFixed(1)} ${(Math.sin(t) * r * 1.12).toFixed(1)}`;
+  }
+  return `<g transform='translate(${x} ${y}) scale(${s})'>` +
+    `<path d='${d}z' fill='#8fe04a' fill-opacity='${o}'/>` +
+    `<path d='M-12-6Q0-18 12-6T0 10Q-8 8-6 0' fill='none' stroke='#e8ffc4' stroke-opacity='${o * 1.6}' stroke-width='2.2' stroke-linecap='round'/>` +
+    `<circle r='5' fill='#e8ffc4' fill-opacity='${o * 1.4}'/></g>`;
+}
+const saucer = (x, y, s, o, r = 0) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})' fill='white'>` +
+  `<path d='M-9-3a9 8 0 0 1 18 0z' fill-opacity='${o * 0.8}'/><ellipse rx='22' ry='5.5' fill-opacity='${o * 1.2}'/>` +
+  `<circle cx='-11' cy='0' r='1.4' fill='#b6f0ff' fill-opacity='.5'/><circle cx='0' cy='1' r='1.4' fill='#b6f0ff' fill-opacity='.5'/><circle cx='11' cy='0' r='1.4' fill='#b6f0ff' fill-opacity='.5'/></g>`;
+function stars(w, h, n, seed) {
+  let s = seed, out = "";
+  const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+  for (let k = 0; k < n; k++) out += dot((rnd() * w).toFixed(0), (rnd() * h).toFixed(0), (0.6 + rnd() * 1.1).toFixed(1), (0.12 + rnd() * 0.3).toFixed(2));
+  return out;
+}
 const PATTERNS = {
   dexter: { img: svgUrl(320, 300, splat(60, 60, 1.3, 0.13) + blade(220, 70, 1.3, 0.09, -28) + syringe(90, 200, 1.4, 0.08, 32) + drop(250, 200, 1.1, 0.14) + drop(275, 235, 0.6, 0.12) + splat(250, 270, 0.6, 0.11) + blade(150, 285, 0.8, 0.07, 160) + drop(160, 130, 0.7, 0.12) + splat(20, 260, 0.5, 0.1)), size: "320px", pos: "0 0", rep: "repeat" },
   onepiece: { img: svgUrl(300, 280, skull(70, 70, 1.3, 0.08) + hat(220, 190, 1.2, 0.08, -12) + hat(235, 55, 0.6, 0.07, 18) + skull(80, 215, 0.6, 0.07) + wave(160, 120, 1, 0.08) + wave(40, 150, 0.7, 0.07) + wave(260, 260, 0.8, 0.06) + sparkle(160, 245, 0.5, 0.12) + sparkle(150, 30, 0.4, 0.1)), size: "300px", pos: "0 0", rep: "repeat" },
@@ -727,8 +758,8 @@ const PATTERNS = {
   aranha: { img: web(), size: "900px", pos: "right top", rep: "no-repeat" },
   zerotwo: { img: svgUrl(280, 280, flower(60, 60, 1.6, 0.08, 10) + flower(200, 190, 1.1, 0.07, -20) + petal(190, 60, 0.9, 0.08, 40) + petal(80, 220, 0.8, 0.07, -60) + petal(250, 120, 0.6, 0.06, 120) + petal(30, 140, 0.6, 0.06, 200)), size: "280px", pos: "0 0", rep: "repeat" },
   naruto: { img: svgUrl(260, 260, spiral(70, 70, 1.6, 0.08) + spiral(195, 185, 1.1, 0.07) + spiral(205, 55, 0.6, 0.06) + spiral(55, 205, 0.5, 0.06)), size: "260px", pos: "0 0", rep: "repeat" },
-  // portais, planetinhas e estrelas
-  rick: { img: svgUrl(300, 300, spiral(80, 85, 1.4, 0.09) + ring(80, 85, 34, 0.06) + spiral(225, 215, 0.9, 0.07) + ring(225, 215, 22, 0.05) + dot(235, 60, 9, 0.07) + ring(235, 60, 15, 0.06) + dot(60, 240, 5, 0.08) + sparkle(160, 140, 0.6, 0.12) + sparkle(270, 140, 0.4, 0.1) + dot(30, 30, 1.6, 0.25) + dot(150, 270, 1.6, 0.2) + dot(285, 285, 1.4, 0.2)), size: "300px", pos: "0 0", rep: "repeat" },
+  // espaço: saturno, planetas, portal verde, disco voador e muitas estrelas
+  rick: { img: svgUrl(360, 360, stars(360, 360, 60, 7) + saturn(85, 80, 1.4, 0.2) + portal(270, 215, 1.2, 0.3) + planet(280, 60, 1, 0.17) + planet(70, 285, 0.7, 0.15) + saucer(160, 300, 1.15, 0.18, -10) + saturn(300, 330, 0.55, 0.15, 20) + sparkle(185, 140, 0.7, 0.28) + sparkle(335, 130, 0.45, 0.24) + sparkle(30, 180, 0.5, 0.24) + planet(185, 30, 0.45, 0.18)), size: "360px", pos: "0 0", rep: "repeat" },
   // nuvens fofas e estrelinhas
   aventura: { img: svgUrl(300, 260, cloud(70, 60, 1.5, 0.08) + cloud(220, 170, 1.1, 0.07) + cloud(250, 40, 0.6, 0.06) + sparkle(160, 95, 0.8, 0.14) + sparkle(40, 190, 0.6, 0.12) + sparkle(130, 230, 0.4, 0.1) + dot(280, 110, 2, 0.25) + dot(100, 140, 1.6, 0.2)), size: "300px", pos: "0 0", rep: "repeat" },
 };

@@ -85,7 +85,8 @@
   --a: #97ce4c; --a2: #b6f0ff; --on-a: #0a1a04;
   --grad: linear-gradient(120deg, #6fbf2a, #b2e65a 50%, #44c2e6);
   --logo: linear-gradient(100deg, #e4ffc2, #a7e05a 40%, #44c2e6 85%);
-  --bg: #04120c; --b1: rgba(151, 206, 76, .5); --b2: rgba(68, 194, 230, .35); --b3: rgba(60, 140, 40, .38);
+  /* espaço: roxo bem escuro com nebulosa roxa, brilho verde de portal e azul */
+  --bg: #07041a; --b1: rgba(124, 70, 255, .42); --b2: rgba(151, 206, 76, .34); --b3: rgba(68, 194, 230, .28);
 }
 [data-theme="vermelho"] {
   --a: #f05a5e; --a2: #ffb3b5; --on-a: #fff;
