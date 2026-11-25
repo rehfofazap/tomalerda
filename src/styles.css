@@ -175,7 +175,6 @@
   font-family: "Jakarta", "Segoe UI", system-ui, sans-serif;
   font-size: 14px;
   color: var(--text);
-  background: var(--bg);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -183,11 +182,17 @@
 html, body { margin: 0; height: 100%; overflow: hidden; }
 /* janela arredondada: a janela do Windows é transparente e o app é recortado aqui.
    transform faz os elementos "fixed" (fundo, topo, abertura) também serem recortados. */
-html { background: transparent; }
+html:root { background: transparent; }
 body {
   --win-r: 14px;
-  background: var(--bg); transition: background .5s;
+  /* o fundo NÃO pode ficar no body: com o html transparente, o navegador
+     pinta o fundo do body na janela inteira (quadrado). Fica numa camada recortada. */
+  background: none;
   border-radius: var(--win-r); transform: translateZ(0);
+}
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--bg); transition: background .5s;
 }
 /* contorno fininho por cima de tudo, pra borda arredondada ficar nítida */
 body::after {
