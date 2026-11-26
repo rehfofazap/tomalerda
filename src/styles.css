@@ -185,68 +185,71 @@
 /* --p-*  painéis grandes (menu e área principal)
    --i-*  cartões dentro deles: um degrau acima do painel, nunca o mesmo fundo de novo
    --i-hover / --i-on  borda quando passa o mouse / quando está marcado */
+/* --k = intensidade do estilo (slider, 1 = normal), --kb = desfoque do painel */
+:root { --k: 1; --kb: 1; }
 :root, [data-style="vidro"] {
   /* vidro fosco neutro: escurece um pouco e desfoca, sem estourar a cor do fundo */
-  --p-bg: linear-gradient(165deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .02) 60%), rgba(10, 10, 16, .32);
-  --p-border: rgba(255, 255, 255, .09); --p-top: rgba(255, 255, 255, .18);
-  --p-blur: blur(28px) saturate(115%);
-  --p-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 22px 50px -28px rgba(0, 0, 0, .85);
-  --i-bg: linear-gradient(170deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .03));
-  --i-border: rgba(255, 255, 255, .08); --i-top: rgba(255, 255, 255, .16);
-  --i-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 8px 22px -16px rgba(0, 0, 0, .7);
-  --i-hover: rgba(255, 255, 255, .2); --i-on: color-mix(in srgb, var(--a) 70%, transparent);
+  --p-bg: linear-gradient(165deg, rgba(255, 255, 255, calc(.075 * var(--k))), rgba(255, 255, 255, calc(.02 * var(--k))) 60%), rgba(10, 10, 16, calc(.32 * var(--k)));
+  --p-border: rgba(255, 255, 255, calc(.09 * var(--k))); --p-top: rgba(255, 255, 255, calc(.18 * var(--k)));
+  --p-blur: blur(calc(28px * var(--kb))) saturate(115%);
+  --p-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(.07 * var(--k))), 0 22px 50px -28px rgba(0, 0, 0, calc(.85 * var(--k)));
+  --i-bg: linear-gradient(170deg, rgba(255, 255, 255, calc(.07 * var(--k))), rgba(255, 255, 255, calc(.03 * var(--k))));
+  --i-border: rgba(255, 255, 255, calc(.08 * var(--k))); --i-top: rgba(255, 255, 255, calc(.16 * var(--k)));
+  --i-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(.05 * var(--k))), 0 8px 22px -16px rgba(0, 0, 0, calc(.7 * var(--k)));
+  --i-hover: rgba(255, 255, 255, calc(.2 * var(--k))); --i-on: color-mix(in srgb, var(--a) 70%, transparent);
 }
 [data-style="solido"] {
   /* sem transparência: chapado escuro com um toque da cor do tema, cartões um tom acima */
   --p-bg: color-mix(in srgb, var(--bg) 55%, #121217);
-  --p-border: rgba(255, 255, 255, .06); --p-top: rgba(255, 255, 255, .09);
+  --p-border: rgba(255, 255, 255, calc(.06 * var(--k))); --p-top: rgba(255, 255, 255, calc(.09 * var(--k)));
   --p-blur: none;
-  --p-shadow: 0 18px 44px -24px rgba(0, 0, 0, .95);
+  --p-shadow: 0 18px 44px -24px rgba(0, 0, 0, calc(.95 * var(--k)));
   --i-bg: color-mix(in srgb, color-mix(in srgb, var(--bg) 45%, #1c1c23), var(--a) 4%);
-  --i-border: rgba(255, 255, 255, .06); --i-top: rgba(255, 255, 255, .1);
-  --i-shadow: 0 1px 0 rgba(0, 0, 0, .35), 0 6px 16px -12px rgba(0, 0, 0, .8);
-  --i-hover: rgba(255, 255, 255, .16); --i-on: color-mix(in srgb, var(--a) 75%, transparent);
+  --i-border: rgba(255, 255, 255, calc(.06 * var(--k))); --i-top: rgba(255, 255, 255, calc(.1 * var(--k)));
+  --i-shadow: 0 1px 0 rgba(0, 0, 0, calc(.35 * var(--k))), 0 6px 16px -12px rgba(0, 0, 0, calc(.8 * var(--k)));
+  --i-hover: rgba(255, 255, 255, calc(.16 * var(--k))); --i-on: color-mix(in srgb, var(--a) 75%, transparent);
 }
 [data-style="translucido"] {
-  --p-bg: rgba(255, 255, 255, .045);
-  --p-border: rgba(255, 255, 255, .08); --p-top: rgba(255, 255, 255, .12);
+  --p-bg: rgba(255, 255, 255, calc(.045 * var(--k)));
+  --p-border: rgba(255, 255, 255, calc(.08 * var(--k))); --p-top: rgba(255, 255, 255, calc(.12 * var(--k)));
   --p-blur: none;
   --p-shadow: none;
-  --i-bg: rgba(255, 255, 255, .045);
-  --i-border: rgba(255, 255, 255, .08); --i-top: rgba(255, 255, 255, .12);
+  --i-bg: rgba(255, 255, 255, calc(.045 * var(--k)));
+  --i-border: rgba(255, 255, 255, calc(.08 * var(--k))); --i-top: rgba(255, 255, 255, calc(.12 * var(--k)));
   --i-shadow: none;
-  --i-hover: rgba(255, 255, 255, .16); --i-on: var(--glow);
+  --i-hover: rgba(255, 255, 255, calc(.16 * var(--k))); --i-on: var(--glow);
 }
 [data-style="glass"] {
-  /* vidro transparente com reflexo: bem claro na borda de cima e brilho na diagonal */
-  --p-bg: linear-gradient(135deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .035) 38%, rgba(255, 255, 255, .015) 62%, rgba(255, 255, 255, .07)), rgba(8, 8, 14, .18);
-  --p-border: rgba(255, 255, 255, .16); --p-top: rgba(255, 255, 255, .42);
-  --p-blur: blur(34px) saturate(125%);
-  --p-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), inset 1px 0 0 rgba(255, 255, 255, .06), 0 26px 60px -30px rgba(0, 0, 0, .85);
-  --i-bg: linear-gradient(150deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .03) 55%, rgba(255, 255, 255, .06));
-  --i-border: rgba(255, 255, 255, .13); --i-top: rgba(255, 255, 255, .34);
-  --i-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 10px 24px -18px rgba(0, 0, 0, .8);
-  --i-hover: rgba(255, 255, 255, .32); --i-on: color-mix(in srgb, var(--a2) 80%, transparent);
+  /* liquid glass: quase sem cor, fundo bem desfocado e saturado, borda de luz (reflexo
+     forte no canto de cima/esquerda, fraco embaixo/direita) e um brilho interno de espessura */
+  --p-bg: radial-gradient(120% 80% at 0% 0%, rgba(255, 255, 255, calc(.16 * var(--k))), rgba(255, 255, 255, calc(0 * var(--k))) 55%), radial-gradient(90% 70% at 100% 100%, rgba(255, 255, 255, calc(.07 * var(--k))), rgba(255, 255, 255, calc(0 * var(--k))) 60%), rgba(255, 255, 255, calc(.035 * var(--k)));
+  --p-border: rgba(255, 255, 255, calc(.18 * var(--k))); --p-top: rgba(255, 255, 255, calc(.5 * var(--k)));
+  --p-blur: blur(calc(22px * var(--kb))) saturate(180%) brightness(1.06);
+  --p-shadow: inset 1.5px 1.5px 0 -.5px rgba(255, 255, 255, calc(.55 * var(--k))), inset -1px -1px 0 rgba(255, 255, 255, calc(.14 * var(--k))), inset 0 0 24px rgba(255, 255, 255, calc(.07 * var(--k))), inset 0 -12px 26px -20px rgba(255, 255, 255, calc(.3 * var(--k))), 0 24px 50px -26px rgba(0, 0, 0, calc(.7 * var(--k)));
+  --i-bg: radial-gradient(130% 90% at 0% 0%, rgba(255, 255, 255, calc(.14 * var(--k))), rgba(255, 255, 255, calc(0 * var(--k))) 60%), rgba(255, 255, 255, calc(.04 * var(--k)));
+  --i-border: rgba(255, 255, 255, calc(.16 * var(--k))); --i-top: rgba(255, 255, 255, calc(.42 * var(--k)));
+  --i-shadow: inset 1px 1px 0 rgba(255, 255, 255, calc(.4 * var(--k))), inset -1px -1px 0 rgba(255, 255, 255, calc(.08 * var(--k))), inset 0 0 14px rgba(255, 255, 255, calc(.05 * var(--k))), 0 10px 22px -16px rgba(0, 0, 0, calc(.7 * var(--k)));
+  --i-hover: rgba(255, 255, 255, calc(.4 * var(--k))); --i-on: color-mix(in srgb, var(--a2) 80%, transparent);
 }
 [data-style="acrilico"] {
   /* acrílico: vidro escuro tingido de leve na cor do tema */
-  --p-bg: linear-gradient(165deg, color-mix(in srgb, var(--a) 13%, rgba(14, 14, 20, .6)), color-mix(in srgb, var(--a) 5%, rgba(10, 10, 16, .68)));
-  --p-border: color-mix(in srgb, var(--a) 20%, rgba(255, 255, 255, .06)); --p-top: color-mix(in srgb, var(--a2) 32%, transparent);
-  --p-blur: blur(30px) saturate(125%);
-  --p-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 22px 50px -28px rgba(0, 0, 0, .9);
-  --i-bg: linear-gradient(170deg, color-mix(in srgb, var(--a) 11%, rgba(255, 255, 255, .035)), color-mix(in srgb, var(--a) 5%, rgba(255, 255, 255, .015)));
-  --i-border: color-mix(in srgb, var(--a) 16%, rgba(255, 255, 255, .05)); --i-top: color-mix(in srgb, var(--a2) 26%, transparent);
-  --i-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+  --p-bg: linear-gradient(165deg, color-mix(in srgb, var(--a) 13%, rgba(14, 14, 20, calc(.6 * var(--k)))), color-mix(in srgb, var(--a) 5%, rgba(10, 10, 16, calc(.68 * var(--k)))));
+  --p-border: color-mix(in srgb, var(--a) 20%, rgba(255, 255, 255, calc(.06 * var(--k)))); --p-top: color-mix(in srgb, var(--a2) 32%, transparent);
+  --p-blur: blur(calc(30px * var(--kb))) saturate(125%);
+  --p-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(.07 * var(--k))), 0 22px 50px -28px rgba(0, 0, 0, calc(.9 * var(--k)));
+  --i-bg: linear-gradient(170deg, color-mix(in srgb, var(--a) 11%, rgba(255, 255, 255, calc(.035 * var(--k)))), color-mix(in srgb, var(--a) 5%, rgba(255, 255, 255, calc(.015 * var(--k)))));
+  --i-border: color-mix(in srgb, var(--a) 16%, rgba(255, 255, 255, calc(.05 * var(--k)))); --i-top: color-mix(in srgb, var(--a2) 26%, transparent);
+  --i-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(.04 * var(--k)));
   --i-hover: color-mix(in srgb, var(--a) 45%, transparent); --i-on: color-mix(in srgb, var(--a) 80%, transparent);
 }
 [data-style="neon"] {
   /* neon: tudo escuro; só os painéis grandes e o que está ativo acendem */
-  --p-bg: rgba(5, 5, 9, .74);
+  --p-bg: rgba(5, 5, 9, calc(.74 * var(--k)));
   --p-border: color-mix(in srgb, var(--a) 55%, transparent); --p-top: color-mix(in srgb, var(--a) 80%, #fff 10%);
-  --p-blur: blur(12px);
+  --p-blur: blur(calc(12px * var(--kb)));
   --p-shadow: 0 0 0 1px color-mix(in srgb, var(--a) 12%, transparent), 0 0 26px -8px var(--glow), inset 0 0 30px -18px var(--glow);
-  --i-bg: rgba(255, 255, 255, .025);
-  --i-border: rgba(255, 255, 255, .07); --i-top: rgba(255, 255, 255, .1);
+  --i-bg: rgba(255, 255, 255, calc(.025 * var(--k)));
+  --i-border: rgba(255, 255, 255, calc(.07 * var(--k))); --i-top: rgba(255, 255, 255, calc(.1 * var(--k)));
   --i-shadow: none;
   --i-hover: color-mix(in srgb, var(--a) 70%, transparent); --i-on: var(--a);
 }
@@ -425,22 +428,24 @@ input.bad { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(255,
 /* ---- menu recolhido: só os ícones ---- */
 .sidebar.mini { width: 72px; padding: 16px 10px 12px; }
 .sidebar.mini .sideToggle { transform: rotate(180deg); }
-.sidebar.mini .brand { margin: 0 0 8px; padding-bottom: 12px; border-bottom: 0; position: relative; }
+.sidebar.mini .brand { margin: 0 0 10px; padding-bottom: 14px; border-bottom: 0; position: relative; }
 .sidebar.mini .brand::after {
   content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 1px;
   background: linear-gradient(90deg, transparent, var(--line-2), transparent);
 }
 .sidebar.mini .logo, .sidebar.mini .by, .sidebar.mini .ver { display: none; }
 .sidebar.mini .brandPic {
-  display: block; width: 44px; height: 44px; border-radius: 14px;
+  display: block; width: 40px; height: 40px; border-radius: 13px;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--a) 55%, transparent), 0 8px 20px -8px var(--glow);
 }
 /* separadores: tracinho curto no meio, no lugar do título do grupo */
-.sidebar.mini .navTitle { font-size: 0; height: 1px; width: 28px; flex-shrink: 0; margin: 6px auto; background: linear-gradient(90deg, transparent, var(--line-2), transparent); }
+.sidebar.mini .navTitle { font-size: 0; height: 1px; width: 26px; flex-shrink: 0; margin: 4px auto; background: linear-gradient(90deg, transparent, var(--line-2), transparent); }
 /* cada item vira um quadradinho centralizado */
-.sidebar.mini nav { align-items: center; gap: 2px; }
+.sidebar.mini nav { align-items: center; gap: 4px; padding: 2px 0; }
+/* tudo na mesma coluna: mesma largura e centralizado */
+.sidebar.mini .navItem, .sidebar.mini .me, .sidebar.mini .swapBtn, .sidebar.mini .updCard { margin-left: auto; margin-right: auto; }
 .sidebar.mini .navItem {
-  position: relative; justify-content: center; width: 42px; height: 36px; padding: 0; font-size: 0; gap: 0; border-radius: 12px;
+  position: relative; justify-content: center; width: 42px; height: 36px; flex: none; padding: 0; font-size: 0; gap: 0; border-radius: 12px;
 }
 .sidebar.mini .navItem svg { width: 19px; height: 19px; transition: transform .2s; }
 .sidebar.mini .navItem:hover svg { transform: scale(1.1); }
@@ -456,11 +461,11 @@ input.bad { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(255,
 .sidebar.mini .live { position: absolute; top: 5px; right: 6px; margin: 0; box-shadow: 0 0 0 2px var(--bg); }
 .sidebar.mini .updCard { justify-content: center; padding: 8px 0; }
 .sidebar.mini .updTxt { display: none; }
-.sidebar.mini .meRow { flex-direction: column; align-items: center; gap: 8px; }
-.sidebar.mini .me { justify-content: center; padding: 0; width: 46px; height: 46px; border-radius: 50%; background: none; border: 0; }
-.sidebar.mini .me .avatar { width: 42px; height: 42px; box-shadow: 0 0 0 2px var(--a), 0 6px 16px -6px var(--glow); }
+.sidebar.mini .meRow { flex-direction: column; align-items: center; gap: 6px; margin-top: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.sidebar.mini .me { justify-content: center; padding: 0; width: 42px; height: 42px; flex: none; border-radius: 50%; background: none; border: 0; }
+.sidebar.mini .me .avatar { width: 38px; height: 38px; box-shadow: 0 0 0 2px var(--a), 0 6px 16px -6px var(--glow); }
 .sidebar.mini .meText { display: none; }
-.sidebar.mini .swapBtn { width: 44px; height: 36px; border-radius: 12px; }
+.sidebar.mini .swapBtn { width: 42px; height: 36px; flex: none; border-radius: 12px; }
 /* nome do item ao passar o mouse com o menu recolhido (criado no main.js) */
 .navTip {
   position: fixed; z-index: 60; pointer-events: none; padding: 6px 11px; border-radius: 9px;
@@ -1002,11 +1007,12 @@ input[type=range] { flex: 1; accent-color: var(--a); }
 .miniStats b { font-size: 18px; font-weight: 700; color: var(--a2); }
 .miniStats span { font-size: 12px; color: var(--dim); }
 .miniToggles { display: flex; gap: 18px; margin-top: 10px; }
-.mini { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); cursor: pointer; }
-.mini input { display: none; }
-.mini span { width: 17px; height: 17px; border-radius: 5px; border: 1.5px solid var(--line-2); background: var(--field); display: grid; place-items: center; transition: all .2s; }
-.mini input:checked + span { background: var(--grad); border-color: transparent; }
-.mini input:checked + span::after { content: ""; width: 4px; height: 8px; border: solid var(--on-a); border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); }
+/* caixinhas pequenas (label.mini) — escopo em "label" pra não pegar o menu recolhido (.sidebar.mini) */
+label.mini { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); cursor: pointer; }
+label.mini input { display: none; }
+label.mini span { width: 17px; height: 17px; border-radius: 5px; border: 1.5px solid var(--line-2); background: var(--field); display: grid; place-items: center; transition: all .2s; }
+label.mini input:checked + span { background: var(--grad); border-color: transparent; }
+label.mini input:checked + span::after { content: ""; width: 4px; height: 8px; border: solid var(--on-a); border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); }
 
 /* aparência */
 .themes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -1052,7 +1058,14 @@ input[type=range] { flex: 1; accent-color: var(--a); }
 .style[data-s="solido"] .sPrev::after { background: color-mix(in srgb, var(--bg) 55%, #121217); border: 1px solid rgba(255, 255, 255, .07); box-shadow: 0 6px 14px -8px rgba(0, 0, 0, .9); }
 .style[data-s="translucido"] .sPrev::after { background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .1); }
 .style[data-s="vidro"] .sPrev::after { background: linear-gradient(165deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .03)), rgba(10, 10, 16, .3); backdrop-filter: blur(9px) saturate(115%); border: 1px solid rgba(255, 255, 255, .12); border-top-color: rgba(255, 255, 255, .22); }
-.style[data-s="glass"] .sPrev::after { background: linear-gradient(135deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .04) 45%, rgba(255, 255, 255, .1)); backdrop-filter: blur(9px) saturate(125%); border: 1px solid rgba(255, 255, 255, .2); border-top-color: rgba(255, 255, 255, .5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35); }
+.style[data-s="glass"] .sPrev::after { background: radial-gradient(120% 90% at 0% 0%, rgba(255, 255, 255, .24), rgba(255, 255, 255, 0) 60%), rgba(255, 255, 255, .05); backdrop-filter: blur(7px) saturate(180%) brightness(1.08); border: 1px solid rgba(255, 255, 255, .2); border-top-color: rgba(255, 255, 255, .55); box-shadow: inset 1.5px 1.5px 0 -.5px rgba(255, 255, 255, .6), inset -1px -1px 0 rgba(255, 255, 255, .15), inset 0 0 10px rgba(255, 255, 255, .08); }
+/* botãozinho "padrão" ao lado do título dos ajustes */
+.lookReset { margin-left: auto; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--line); background: none; color: var(--dim); font-size: 11.5px; font-weight: 600; }
+.lookReset:hover { color: var(--text); border-color: var(--line-2); }
+.sliderHead { display: flex; align-items: center; padding: 2px 0 8px; }
+.sliderHead b { font-size: 13.5px; }
+.sliderHead small { display: block; font-size: 12px; color: var(--dim); font-weight: 400; }
+.sliderGroup { padding-top: 6px; margin-top: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; color: var(--dim); }
 .style[data-s="acrilico"] .sPrev::after { background: linear-gradient(165deg, color-mix(in srgb, var(--a) 16%, rgba(14, 14, 20, .6)), color-mix(in srgb, var(--a) 6%, rgba(10, 10, 16, .7))); backdrop-filter: blur(9px); border: 1px solid color-mix(in srgb, var(--a) 24%, transparent); }
 .style[data-s="neon"] .sPrev::after { background: rgba(5, 5, 9, .8); border: 1px solid color-mix(in srgb, var(--a) 70%, transparent); box-shadow: 0 0 12px -2px var(--glow), inset 0 0 12px -6px var(--glow); }
 
@@ -1118,6 +1131,29 @@ input[type=range] { flex: 1; accent-color: var(--a); }
   background: var(--logo); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
   filter: drop-shadow(0 0 18px var(--glow)); animation: brilho 2.5s ease-in-out infinite alternate;
 }
+/* a borrachinha apaga o nome (--ec = até onde já apagou) e depois ele volta escrito (--w).
+   Recorte (clip-path) e não máscara: máscara dentro do cartão de vidro deixa um retângulo escuro */
+.spLogo { clip-path: inset(-30px -30px -30px var(--ec, -30px)); }
+.spLogo.write { clip-path: inset(-30px calc(100% - var(--w, 0px)) -30px -30px); }
+/* borrachinha da abertura (desenho próprio): corpo na cor do tema, capinha branca */
+:root { --er: var(--a); }
+[data-theme="tokyoghoul"] { --er: #e3192b; }   /* tema branco: a borracha vira o toque de vermelho */
+[data-theme="preto"] { --er: #3a3a42; }
+.spEr {
+  position: absolute; left: 0; top: 0; width: 58px; height: 51px; z-index: 3; pointer-events: none;
+  transform-origin: 2px 26.8px; opacity: 0; transition: opacity .2s;
+  filter: drop-shadow(0 8px 8px rgba(0, 0, 0, .35));
+}
+.spEr.on { opacity: 1; }
+.spEr svg { width: 100%; height: 100%; overflow: visible; }
+.spEr .t { fill: color-mix(in srgb, var(--er) 72%, #fff); }
+.spEr .f { fill: var(--er); }
+.spEr .sh { fill: color-mix(in srgb, var(--er) 76%, #000); }
+.spEr .c { fill: #fff; }
+.spEr .cs { fill: #e4e0e8; }
+.spEr .o { fill: none; stroke: color-mix(in srgb, var(--er) 22%, #1b1016); stroke-width: 7; stroke-linejoin: round; }
+.spCrumb { position: absolute; left: 0; top: 0; z-index: 2; border-radius: 2px; pointer-events: none; }
+.spSpark { position: absolute; left: 0; top: 0; z-index: 3; width: 12px; height: 12px; pointer-events: none; }
 .spBy {
   margin: 2px 0 26px; padding: 4px 12px; border-radius: 99px; font-size: 11.5px; font-weight: 600; letter-spacing: .6px;
   color: var(--a2); background: color-mix(in srgb, var(--a) 14%, transparent); border: 1px solid color-mix(in srgb, var(--a) 30%, transparent);

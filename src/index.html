@@ -504,9 +504,22 @@
               <button class="style" data-s="solido"><span class="sPrev"></span><b>Sólido</b><small>Sem transparência</small></button>
               <button class="style" data-s="translucido"><span class="sPrev"></span><b>Translúcido</b><small>Leve, dá pra ver o fundo</small></button>
               <button class="style" data-s="vidro"><span class="sPrev"></span><b>Vidro</b><small>Fosco e desfocado</small></button>
-              <button class="style" data-s="glass"><span class="sPrev"></span><b>Efeito glass</b><small>Vidro forte com brilho</small></button>
+              <button class="style" data-s="glass"><span class="sPrev"></span><b>Liquid glass</b><small>Vidro líquido com reflexo</small></button>
               <button class="style" data-s="acrilico"><span class="sPrev"></span><b>Acrílico</b><small>Vidro tingido na cor</small></button>
               <button class="style" data-s="neon"><span class="sPrev"></span><b>Neon</b><small>Bordas que brilham</small></button>
+            </div>
+
+            <div class="card list" style="margin-top: 12px">
+              <div class="sliderHead">
+                <div><b>Ajustes do visual</b><small>Quanto do estilo aparece nos painéis e como fica o fundo</small></div>
+                <button class="lookReset" id="lookReset">Padrão</button>
+              </div>
+              <div class="sliderGroup">Painéis</div>
+              <div class="sliderRow"><span>Intensidade</span><input type="range" id="pnK" min="0" max="200" step="5" value="100" /><em id="pnKV">100%</em></div>
+              <div class="sliderRow"><span>Desfoque</span><input type="range" id="pnB" min="0" max="200" step="5" value="100" /><em id="pnBV">100%</em></div>
+              <div class="sliderGroup">Fundo</div>
+              <div class="sliderRow"><span>Desfoque</span><input type="range" id="bgBlur" min="0" max="30" value="6" /><em id="bgBlurV">6</em></div>
+              <div class="sliderRow"><span>Escurecer</span><input type="range" id="bgDim" min="0" max="90" value="45" /><em id="bgDimV">45%</em></div>
             </div>
 
             <p class="section">Fundo personalizado</p>
@@ -523,8 +536,6 @@
                   <input type="file" id="bgFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
                 </div>
               </div>
-              <div class="sliderRow"><span>Desfoque</span><input type="range" id="bgBlur" min="0" max="30" value="6" /><em id="bgBlurV">6</em></div>
-              <div class="sliderRow"><span>Escurecer</span><input type="range" id="bgDim" min="0" max="90" value="45" /><em id="bgDimV">45%</em></div>
             </div>
 
             <p class="section">Extras</p>

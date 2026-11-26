@@ -1073,7 +1073,7 @@ const PATTERNS = {
 
 const THEMES = ["preto", "rosa", "azul", "roxo", "vermelho", "cinza", "menta", "dourado", "oceano", "kitty", "aranha", "zerotwo", "naruto", "onepiece", "dexter", "rick", "aventura", "tokyoghoul"];
 const STYLES = ["solido", "translucido", "vidro", "glass", "acrilico", "neon"];
-const LOOK_DEF = { theme: "rosa", style: "vidro", motion: true, splash: true, blur: 6, dim: 45 };
+const LOOK_DEF = { theme: "rosa", style: "vidro", motion: true, splash: true, blur: 6, dim: 45, pk: 100, pb: 100 };
 let look = { ...LOOK_DEF };
 try { look = { ...LOOK_DEF, ...JSON.parse(localStorage.getItem("look") || "{}") }; } catch {}
 if (!THEMES.includes(look.theme)) look.theme = LOOK_DEF.theme;
@@ -1129,6 +1129,10 @@ function applyLook() {
   if (pat) Object.assign(el.style, { backgroundSize: pat.size, backgroundPosition: pat.pos, backgroundRepeat: pat.rep });
   root.style.setProperty("--bgBlur", `${look.blur}px`);
   root.style.setProperty("--bgDim", look.dim / 100);
+  root.style.setProperty("--k", look.pk / 100);   // intensidade do estilo dos painéis
+  root.style.setProperty("--kb", look.pb / 100);  // desfoque dos painéis
+  $("pnK").value = look.pk; $("pnKV").textContent = `${look.pk}%`;
+  $("pnB").value = look.pb; $("pnBV").textContent = `${look.pb}%`;
   $$(".theme").forEach((t) => t.classList.toggle("on", t.dataset.t === look.theme));
   $$(".style").forEach((t) => t.classList.toggle("on", t.dataset.s === look.style));
   $("lookMotion").checked = look.motion;
@@ -1144,6 +1148,12 @@ $("lookMotion").addEventListener("change", () => { look.motion = $("lookMotion")
 $("lookSplash").addEventListener("change", () => { look.splash = $("lookSplash").checked; applyLook(); });
 $("bgBlur").addEventListener("input", () => { look.blur = +$("bgBlur").value; applyLook(); });
 $("bgDim").addEventListener("input", () => { look.dim = +$("bgDim").value; applyLook(); });
+$("pnK").addEventListener("input", () => { look.pk = +$("pnK").value; applyLook(); });
+$("pnB").addEventListener("input", () => { look.pb = +$("pnB").value; applyLook(); });
+$("lookReset").addEventListener("click", () => {
+  Object.assign(look, { pk: LOOK_DEF.pk, pb: LOOK_DEF.pb, blur: LOOK_DEF.blur, dim: LOOK_DEF.dim });
+  applyLook();
+});
 applyLook();
 
 // ---------- imagem/GIF de fundo (guardada no IndexedDB, só neste PC) ----------
@@ -1313,7 +1323,8 @@ document.addEventListener("visibilitychange", () => document.documentElement.cla
     h.style.animationDelay = -Math.random() * 6 + "s";
     hearts.append(h);
   }
-  const MSGS = ["acordando…", "amarrando o laço…", "polindo o vidro…", "escolhendo as cores…", "quase lá…", "pronto!"];
+  const eraserDone = splashEraser(sp); // a borrachinha apaga o nome e ele volta escrito
+  const MSGS = ["acordando…", "apagando a bagunça…", "polindo o vidro…", "escolhendo as cores…", "quase lá…", "pronto!"];
   let pct = 0;
   (function tick() {
     pct = Math.min(100, pct + 1.5 + Math.random() * 4.5);
@@ -1321,12 +1332,107 @@ document.addEventListener("visibilitychange", () => document.documentElement.cla
     $("spPct").textContent = Math.floor(pct) + "%";
     $("spMsg").textContent = MSGS[Math.min(MSGS.length - 1, Math.floor(pct / 20))];
     if (pct < 100) return setTimeout(tick, 45 + Math.random() * 70);
-    setTimeout(() => {
-      sp.classList.add("out");
-      setTimeout(() => sp.remove(), 650);
-    }, 380);
+    // só sai depois que o nome voltou escrito (no máximo 1,2 s de espera)
+    Promise.race([eraserDone, new Promise((r) => setTimeout(r, 1200))]).then(() =>
+      setTimeout(() => {
+        sp.classList.add("out");
+        setTimeout(() => sp.remove(), 650);
+      }, 260));
   })();
 })();
+
+// Borrachinha da abertura: entra, esfrega o "tomalerda" da esquerda pra direita soltando
+// farelinhos, sai de lado e o nome volta escrito com brilhinhos. Uns 2 s no total.
+async function splashEraser(sp) {
+  const card = sp.querySelector(".spCard"), logo = sp.querySelector(".spLogo");
+  if (!card || !logo) return;
+  const er = document.createElement("div");
+  er.className = "spEr";
+  er.innerHTML =
+    `<svg viewBox="6 8 173 152"><defs>` +
+    `<clipPath id="spErF"><path d="M12 42 73 78v46L12 88z"/></clipPath>` +
+    `<clipPath id="spErC"><path d="M73 78 124 107v46L73 124z"/></clipPath>` +
+    `<clipPath id="spErP"><path d="M124 107 173 79v46l-49 28z"/></clipPath></defs>` +
+    `<path class="t" d="M60 14 122 50 73 78 12 42z"/><path class="f" d="M12 42 73 78v46L12 88z"/>` +
+    `<path class="c" d="M122 50 173 79 124 107 73 78z"/><path class="c" d="M73 78 124 107v46L73 124z"/><path class="c" d="M124 107 173 79v46l-49 28z"/>` +
+    `<g clip-path="url(#spErF)"><ellipse class="sh" cx="34" cy="122" rx="62" ry="30"/></g>` +
+    `<g clip-path="url(#spErC)"><ellipse class="cs" cx="96" cy="160" rx="52" ry="22"/></g>` +
+    `<g clip-path="url(#spErP)"><ellipse class="cs" cx="160" cy="158" rx="50" ry="26"/></g>` +
+    `<path d="M40 30 80 53" stroke="#fff" stroke-opacity=".7" stroke-width="5" stroke-linecap="round"/>` +
+    `<path class="o" d="M60 14 122 50 73 78 12 42zM12 42 73 78v46L12 88zM122 50 173 79 124 107 73 78zM73 78 124 107v46L73 124zM124 107 173 79v46l-49 28z"/></svg>`;
+  card.append(er);
+
+  const TX = 2, TY = 26.8, BASE = -38;   // ponta rosa dentro do desenho (58 px de largura)
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const tween = (ms, fn, e = (t) => t) => new Promise((res) => {
+    const s = performance.now();
+    (function f(now) {
+      const t = Math.min(1, (now - s) / ms);
+      fn(e(t));
+      t < 1 ? requestAnimationFrame(f) : res();
+    })(s);
+  });
+  let pos = { x: 0, y: 0, r: BASE };
+  const place = (x, y, r) => { pos = { x, y, r }; er.style.transform = `translate(${x - TX}px, ${y - TY}px) rotate(${r}deg)`; };
+  const moveTo = (x, y, r, ms, arc = 18) => {
+    const p = { ...pos };
+    return tween(ms, (t) => place(p.x + (x - p.x) * t, p.y + (y - p.y) * t - Math.sin(t * Math.PI) * arc, p.r + (r - p.r) * t), ease);
+  };
+  const crumb = (x, y) => {
+    const c = document.createElement("i");
+    c.className = "spCrumb";
+    const s = 2.5 + Math.random() * 3.5;
+    c.style.width = `${s}px`; c.style.height = `${s * (0.6 + Math.random() * 0.7)}px`;
+    c.style.background = ["var(--er)", "var(--a2)", "color-mix(in srgb, var(--er) 70%, #fff)", "rgba(255,255,255,.7)"][(Math.random() * 4) | 0];
+    card.append(c);
+    let vx = (Math.random() - 0.65) * 2.4, vy = -0.5 - Math.random() * 2, px = x, py = y, rot = Math.random() * 360, life = 0;
+    const max = 34 + Math.random() * 20;
+    (function f() {
+      life++; vy += 0.2; px += vx; py += vy; rot += vx * 9;
+      c.style.transform = `translate(${px}px, ${py}px) rotate(${rot}deg)`;
+      c.style.opacity = String(Math.max(0, 1 - life / max));
+      life < max ? requestAnimationFrame(f) : c.remove();
+    })();
+  };
+  const spark = (x, y) => {
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    s.setAttribute("viewBox", "-10 -10 20 20"); s.classList.add("spSpark");
+    s.innerHTML = `<path d="M0-10C1-2 2-1 10 0 2 1 1 2 0 10-1 2-2 1-10 0-2-1-1-2 0-10z" fill="${Math.random() < 0.5 ? "var(--a2)" : "#fff"}"/>`;
+    card.append(s);
+    const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4, d = 18 + Math.random() * 26;
+    tween(620, (t) => {
+      s.style.transform = `translate(${x + Math.cos(a) * d * t - 6}px, ${y + Math.sin(a) * d * t - 6}px) scale(${Math.sin(t * Math.PI)}) rotate(${t * 200}deg)`;
+    }, (t) => 1 - Math.pow(1 - t, 2)).then(() => s.remove());
+  };
+
+  // posição do nome dentro do cartão (offset* não muda com a animação de entrada do cartão)
+  const L = logo.offsetLeft + 8, W = logo.offsetWidth - 16, T = logo.offsetTop, H = logo.offsetHeight;
+  const top = T + H * 0.42, bot = T + H * 0.74, mid = (top + bot) / 2, amp = (bot - top) / 2;
+
+  await sleep(420);                                   // deixa o cartão terminar de entrar
+  place(L + W + 26, T + H + 6, BASE + 12);
+  er.classList.add("on");
+  await moveTo(L - 4, mid, BASE, 240);
+  await tween(760, (t) => {                           // esfrega rápido, 7 idas e vindas
+    const p = t * (W + 14), wob = Math.sin(t * Math.PI * 14);
+    place(L - 4 + p, mid + wob * amp, BASE + wob * 8);
+    logo.style.setProperty("--ec", `${p + 2}px`);
+    if (Math.random() < 0.65) crumb(pos.x, pos.y);
+  });
+  await moveTo(L + W + 26, T + H + 6, BASE + 12, 200, 14);
+  er.classList.remove("on");
+  logo.classList.add("write");                        // o nome volta escrito
+  await tween(440, (t) => {
+    const p = t * (W + 50);
+    logo.style.setProperty("--w", `${Math.max(0, p - 22)}px`);
+    if (Math.random() < 0.3) spark(L + p - 20, T + H * (0.3 + Math.random() * 0.45));
+  }, ease);
+  logo.classList.remove("write");
+  logo.style.removeProperty("--ec");
+  logo.style.removeProperty("--w");
+  setTimeout(() => er.remove(), 300);
+}
 
 // caixas extras que só aparecem com a opção ligada
 [["idAfk", "afkBox"], ["idReply", "replyBox"]].forEach(([t, box]) => {
