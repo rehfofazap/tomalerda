@@ -54,7 +54,7 @@ preto, rosa, azul, roxo, vermelho, cinza, menta, dourado, oceano, hello kitty, h
 
 ## como instalar
 
-1. baixa o `.exe` na aba [releases](https://github.com/rehfofazap/tomalerda/releases/latest) ou na [página do tomalerda](https://rehbet.com.br/tomalerda)
+1. baixa o `.exe` na aba [releases](https://github.com/rehfofazap/tomalerda/releases/latest) ou na [tomalerda.com](https://tomalerda.com)
 2. abre e instala. se o windows reclamar ("o windows protegeu o computador"), clica em **mais informações** e depois **executar assim mesmo** (o instalador ainda não tem assinatura de editor)
 3. cola seu token e pronto
 

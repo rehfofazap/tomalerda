@@ -17,7 +17,7 @@ bug comum (botão que não funciona, tela quebrada, mensagem que não apagou) po
 ## como o app cuida das coisas
 
 - o token fica no cofre do windows (gerenciador de credenciais), não em arquivo
-- o app só conversa com `discord.com` e com o endereço de atualização (`rehbet.com.br/tomalerda`)
+- o app só conversa com `discord.com` e com o endereço de atualização (`tomalerda.com`)
 - toda atualização é assinada; o app confere a assinatura antes de instalar e recusa se não bater
 - o sha256 de cada instalador fica nas notas da [release](https://github.com/rehfofazap/tomalerda/releases)
 
