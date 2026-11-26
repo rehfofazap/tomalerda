@@ -140,41 +140,77 @@
 }
 
 /* ---------- estilos dos painéis ---------- */
+/* --p-*  painéis grandes (menu e área principal)
+   --i-*  cartões dentro deles: um degrau acima do painel, nunca o mesmo fundo de novo
+   --i-hover / --i-on  borda quando passa o mouse / quando está marcado */
 :root, [data-style="vidro"] {
-  --p-bg: linear-gradient(160deg, rgba(255, 255, 255, .11), rgba(255, 255, 255, .03));
-  --p-border: rgba(255, 255, 255, .1); --p-top: rgba(255, 255, 255, .2);
-  --p-blur: blur(26px) saturate(170%);
-  --p-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 18px 44px -26px rgba(0, 0, 0, .8);
+  /* vidro fosco neutro: escurece um pouco e desfoca, sem estourar a cor do fundo */
+  --p-bg: linear-gradient(165deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .02) 60%), rgba(10, 10, 16, .32);
+  --p-border: rgba(255, 255, 255, .09); --p-top: rgba(255, 255, 255, .18);
+  --p-blur: blur(28px) saturate(115%);
+  --p-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 22px 50px -28px rgba(0, 0, 0, .85);
+  --i-bg: linear-gradient(170deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .03));
+  --i-border: rgba(255, 255, 255, .08); --i-top: rgba(255, 255, 255, .16);
+  --i-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 8px 22px -16px rgba(0, 0, 0, .7);
+  --i-hover: rgba(255, 255, 255, .2); --i-on: color-mix(in srgb, var(--a) 70%, transparent);
 }
 [data-style="solido"] {
-  --p-bg: color-mix(in srgb, var(--bg), #fff 7%);
-  --p-border: rgba(255, 255, 255, .07); --p-top: rgba(255, 255, 255, .1);
+  /* sem transparência: chapado escuro com um toque da cor do tema, cartões um tom acima */
+  --p-bg: color-mix(in srgb, var(--bg) 55%, #121217);
+  --p-border: rgba(255, 255, 255, .06); --p-top: rgba(255, 255, 255, .09);
   --p-blur: none;
-  --p-shadow: 0 12px 30px -18px rgba(0, 0, 0, .9);
+  --p-shadow: 0 18px 44px -24px rgba(0, 0, 0, .95);
+  --i-bg: color-mix(in srgb, color-mix(in srgb, var(--bg) 45%, #1c1c23), var(--a) 4%);
+  --i-border: rgba(255, 255, 255, .06); --i-top: rgba(255, 255, 255, .1);
+  --i-shadow: 0 1px 0 rgba(0, 0, 0, .35), 0 6px 16px -12px rgba(0, 0, 0, .8);
+  --i-hover: rgba(255, 255, 255, .16); --i-on: color-mix(in srgb, var(--a) 75%, transparent);
 }
 [data-style="translucido"] {
   --p-bg: rgba(255, 255, 255, .045);
   --p-border: rgba(255, 255, 255, .08); --p-top: rgba(255, 255, 255, .12);
   --p-blur: none;
   --p-shadow: none;
+  --i-bg: rgba(255, 255, 255, .045);
+  --i-border: rgba(255, 255, 255, .08); --i-top: rgba(255, 255, 255, .12);
+  --i-shadow: none;
+  --i-hover: rgba(255, 255, 255, .16); --i-on: var(--glow);
 }
 [data-style="glass"] {
-  --p-bg: linear-gradient(145deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, .06) 45%, rgba(255, 255, 255, .12));
-  --p-border: rgba(255, 255, 255, .24); --p-top: rgba(255, 255, 255, .5);
-  --p-blur: blur(40px) saturate(210%) brightness(1.05);
-  --p-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 -1px 0 rgba(255, 255, 255, .12), inset 0 0 26px rgba(255, 255, 255, .07), 0 24px 60px -24px rgba(0, 0, 0, .7);
+  /* vidro transparente com reflexo: bem claro na borda de cima e brilho na diagonal */
+  --p-bg: linear-gradient(135deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .035) 38%, rgba(255, 255, 255, .015) 62%, rgba(255, 255, 255, .07)), rgba(8, 8, 14, .18);
+  --p-border: rgba(255, 255, 255, .16); --p-top: rgba(255, 255, 255, .42);
+  --p-blur: blur(34px) saturate(125%);
+  --p-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), inset 1px 0 0 rgba(255, 255, 255, .06), 0 26px 60px -30px rgba(0, 0, 0, .85);
+  --i-bg: linear-gradient(150deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .03) 55%, rgba(255, 255, 255, .06));
+  --i-border: rgba(255, 255, 255, .13); --i-top: rgba(255, 255, 255, .34);
+  --i-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 10px 24px -18px rgba(0, 0, 0, .8);
+  --i-hover: rgba(255, 255, 255, .32); --i-on: color-mix(in srgb, var(--a2) 80%, transparent);
 }
 [data-style="acrilico"] {
-  --p-bg: linear-gradient(160deg, color-mix(in srgb, var(--a) 22%, rgba(20, 20, 30, .5)), color-mix(in srgb, var(--a) 8%, rgba(10, 10, 20, .55)));
-  --p-border: color-mix(in srgb, var(--a) 30%, transparent); --p-top: color-mix(in srgb, var(--a2) 45%, transparent);
-  --p-blur: blur(34px) saturate(140%);
-  --p-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 20px 48px -26px rgba(0, 0, 0, .85);
+  /* acrílico: vidro escuro tingido de leve na cor do tema */
+  --p-bg: linear-gradient(165deg, color-mix(in srgb, var(--a) 13%, rgba(14, 14, 20, .6)), color-mix(in srgb, var(--a) 5%, rgba(10, 10, 16, .68)));
+  --p-border: color-mix(in srgb, var(--a) 20%, rgba(255, 255, 255, .06)); --p-top: color-mix(in srgb, var(--a2) 32%, transparent);
+  --p-blur: blur(30px) saturate(125%);
+  --p-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 22px 50px -28px rgba(0, 0, 0, .9);
+  --i-bg: linear-gradient(170deg, color-mix(in srgb, var(--a) 11%, rgba(255, 255, 255, .035)), color-mix(in srgb, var(--a) 5%, rgba(255, 255, 255, .015)));
+  --i-border: color-mix(in srgb, var(--a) 16%, rgba(255, 255, 255, .05)); --i-top: color-mix(in srgb, var(--a2) 26%, transparent);
+  --i-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+  --i-hover: color-mix(in srgb, var(--a) 45%, transparent); --i-on: color-mix(in srgb, var(--a) 80%, transparent);
 }
 [data-style="neon"] {
-  --p-bg: rgba(0, 0, 0, .5);
-  --p-border: color-mix(in srgb, var(--a) 65%, transparent); --p-top: var(--a);
-  --p-blur: blur(10px);
-  --p-shadow: 0 0 0 1px color-mix(in srgb, var(--a) 18%, transparent), 0 0 22px -6px var(--glow), inset 0 0 22px -10px var(--glow);
+  /* neon: tudo escuro; só os painéis grandes e o que está ativo acendem */
+  --p-bg: rgba(5, 5, 9, .74);
+  --p-border: color-mix(in srgb, var(--a) 55%, transparent); --p-top: color-mix(in srgb, var(--a) 80%, #fff 10%);
+  --p-blur: blur(12px);
+  --p-shadow: 0 0 0 1px color-mix(in srgb, var(--a) 12%, transparent), 0 0 26px -8px var(--glow), inset 0 0 30px -18px var(--glow);
+  --i-bg: rgba(255, 255, 255, .025);
+  --i-border: rgba(255, 255, 255, .07); --i-top: rgba(255, 255, 255, .1);
+  --i-shadow: none;
+  --i-hover: color-mix(in srgb, var(--a) 70%, transparent); --i-on: var(--a);
+}
+[data-style="neon"] :is(.main, .sidebar) :is(.card, .option, .row, .house, .theme, .style):hover,
+[data-style="neon"] .option:has(input.task:checked) {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--a) 25%, transparent), 0 0 18px -6px var(--glow);
 }
 
 :root {
@@ -300,10 +336,16 @@ input.bad { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(255,
   box-shadow: var(--p-shadow);
   transition: background .4s, border-color .3s, box-shadow .3s;
 }
-/* dentro do painel grande, cartões ficam um pouco mais leves */
+/* dentro do painel grande: visual de cartão do estilo (sem desfocar de novo por cima) */
 .main .card, .main .option, .main .row, .main .steps li, .main .house, .main .theme, .main .style, .main .miniStats div {
+  background: var(--i-bg);
+  border-color: var(--i-border);
+  border-top-color: var(--i-top);
+  box-shadow: var(--i-shadow);
   backdrop-filter: none; -webkit-backdrop-filter: none;
 }
+.main :is(.option, .row, .house, .theme, .style):hover { border-color: var(--i-hover); }
+.main .option:has(input.task:checked) { border-color: var(--i-on); }
 
 
 /* =====================================================================
@@ -431,16 +473,88 @@ nav::-webkit-scrollbar { width: 0; }
   transition: opacity .45s ease, transform .45s ease;
 }
 .gate.out { opacity: 0; transform: scale(1.03); pointer-events: none; }
-.gateBox { width: 420px; max-width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.gatePic {
-  width: 92px; height: 92px; border-radius: 50%; object-fit: cover; margin-bottom: 6px;
-  border: 3px solid rgba(255, 255, 255, .9); box-shadow: 0 14px 36px -12px var(--glow);
+/* cartão central: logo + versão, contas salvas, campo do token e "Entrar" */
+.gateBox {
+  width: 440px; max-width: 100%; display: flex; flex-direction: column; align-items: stretch;
+  padding: 34px 38px 26px; border-radius: 24px;
+  background: linear-gradient(170deg, color-mix(in srgb, var(--bg) 70%, #16161c), color-mix(in srgb, var(--bg) 88%, #000));
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 30px 80px -30px rgba(0, 0, 0, .9), 0 0 0 1px rgba(0, 0, 0, .3);
+  animation: gateIn .5s cubic-bezier(.2, .8, .2, 1) both;
 }
-.gateLogo { font-size: 38px; }
-.gateSub { margin: 0 0 16px; color: var(--muted); font-size: 13.5px; }
-#gateSlot { width: 100%; text-align: left; }
-#gateSlot .card { margin-bottom: 10px; }
-.gateWarn { margin: 4px 0 0; font-size: 12px; color: var(--dim); }
+@keyframes gateIn { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+.gateHead { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.gatePic {
+  width: 44px; height: 44px; border-radius: 13px; object-fit: cover;
+  box-shadow: 0 8px 22px -8px var(--glow), 0 0 0 2px rgba(255, 255, 255, .12);
+}
+.gateLogo { font-size: 34px; margin: 0; line-height: 1.2; }
+.gateVer {
+  align-self: center; padding: 2px 8px; border-radius: 8px; font-size: 11.5px; font-weight: 700;
+  color: var(--a2); background: var(--soft); border: 1px solid color-mix(in srgb, var(--a) 40%, transparent);
+}
+.gateSub { margin: 10px 0 22px; color: var(--muted); font-size: 13.5px; text-align: center; }
+.gateLabel { margin: 0 0 9px; font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--dim); }
+.gateAccs { display: flex; flex-direction: column; gap: 8px; max-height: 196px; overflow-y: auto; }
+.gateAcc {
+  position: relative; display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px; text-align: left;
+  border-radius: 14px; background: rgba(255, 255, 255, .035); border: 1px solid rgba(255, 255, 255, .07);
+  transition: background .2s, border-color .2s, transform .15s;
+}
+.gateAcc:hover { background: var(--soft); border-color: color-mix(in srgb, var(--a) 45%, transparent); }
+.gateAcc:active { transform: scale(.99); }
+.gateAcc:disabled { opacity: .6; cursor: wait; }
+.gateAcc .avatar { width: 38px; height: 38px; box-shadow: 0 0 0 2px var(--a); }
+.gateAcc .meText b { font-size: 14px; }
+.gateAcc .meText small { font-size: 11.5px; }
+.gateAccX {
+  margin-left: auto; width: 26px; height: 26px; flex-shrink: 0; border-radius: 8px; display: grid; place-items: center;
+  color: var(--dim); opacity: 0; transition: opacity .15s, color .15s, background .15s;
+}
+.gateAcc:hover .gateAccX { opacity: 1; }
+.gateAccX:hover { color: var(--red); background: rgba(255, 95, 122, .12); }
+.gateAccX svg { width: 14px; height: 14px; }
+.gateOr { display: flex; align-items: center; gap: 12px; margin: 18px 0 18px; font-size: 11.5px; color: var(--dim); }
+.gateOr::before, .gateOr::after { content: ""; flex: 1; height: 1px; background: rgba(255, 255, 255, .08); }
+.gateField {
+  display: flex; align-items: center; gap: 10px; padding: 0 8px 0 16px; height: 50px; border-radius: 14px;
+  background: rgba(255, 255, 255, .035); border: 1px solid rgba(255, 255, 255, .08); color: var(--dim);
+  transition: border-color .2s, box-shadow .2s;
+}
+.gateField:focus-within { border-color: color-mix(in srgb, var(--a) 60%, transparent); box-shadow: 0 0 0 4px var(--soft); color: var(--a2); }
+.gateField input {
+  flex: 1; min-width: 0; height: 100%; margin: 0; padding: 0; border: 0 !important; border-radius: 0; outline: 0;
+  background: none !important; box-shadow: none !important; font-size: 14px; color: var(--text);
+}
+.gateField input::placeholder { color: var(--dim); }
+.gateEye { width: 34px; height: 34px; border: 0; border-radius: 10px; background: none; color: var(--dim); display: grid; place-items: center; }
+.gateEye:hover { color: var(--text); background: rgba(255, 255, 255, .06); }
+.gateRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0 22px; }
+.gateCheck { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+.gateCheck input { display: none; }
+.gateCheck span {
+  width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid rgba(255, 255, 255, .22); display: grid; place-items: center;
+  transition: background .15s, border-color .15s;
+}
+.gateCheck input:checked + span { background: var(--grad); border-color: transparent; }
+.gateCheck input:checked + span::after { content: ""; width: 9px; height: 5px; border: 2px solid var(--on-a); border-top: 0; border-right: 0; transform: translateY(-1px) rotate(-45deg); }
+.gateKind { display: flex; padding: 3px; border-radius: 10px; background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .07); }
+.gateKind button { padding: 4px 10px; border: 0; border-radius: 7px; background: none; font-size: 11.5px; font-weight: 600; color: var(--dim); }
+.gateKind button.on { background: var(--soft-2); color: var(--text); }
+.gateEnter {
+  display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; border: 0; border-radius: 16px;
+  font-size: 15px; font-weight: 700; color: var(--on-a); background: var(--grad); background-size: 160% 100%;
+  box-shadow: 0 14px 40px -12px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .28);
+  transition: background-position .5s, transform .15s, filter .2s, box-shadow .2s;
+}
+.gateEnter:hover:not(:disabled) { background-position: 100% 0; filter: brightness(1.06); box-shadow: 0 18px 50px -12px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .3); }
+.gateEnter:hover:not(:disabled) svg { transform: translateX(3px); }
+.gateEnter svg { transition: transform .2s; }
+.gateEnter:active:not(:disabled) { transform: scale(.985); }
+.gateEnter:disabled { opacity: .65; cursor: wait; }
+.gateErr { min-height: 18px; margin: 10px 0 0; font-size: 12.5px; color: var(--red); text-align: center; }
+.gateBack { align-self: center; }
+.gateWarn { margin: 8px 0 0; font-size: 11.5px; color: var(--dim); text-align: center; }
 .gateWarn b { color: var(--red); }
 /* travado: nada do app recebe clique nem foco por baixo da entrada */
 body.locked .app { pointer-events: none; user-select: none; }
@@ -508,6 +622,48 @@ body.locked .app { pointer-events: none; user-select: none; }
 .box { width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--line-2); background: var(--field); display: grid; place-items: center; transition: all .2s; }
 .option input.task:checked ~ .box { background: var(--grad); border-color: transparent; }
 .option input.task:checked ~ .box::after { content: ""; width: 5px; height: 9px; border: solid var(--on-a); border-width: 0 2.2px 2.2px 0; transform: translateY(-1px) rotate(45deg); }
+
+/* ---------- páginas de limpeza: ação rápida em destaque, lote, ajustes rápidos ---------- */
+.clean .section { display: flex; align-items: baseline; gap: 10px; }
+.secNote { font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--dim); opacity: .8; }
+.card.hero { position: relative; padding: 20px; overflow: hidden; }
+/* faixa de luz da cor do tema no canto do cartão */
+.card.hero::before {
+  content: ""; position: absolute; inset: -40% -10% auto auto; width: 260px; height: 200px; pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--a) 22%, transparent), transparent);
+}
+.heroHead { position: relative; display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.heroHead > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.heroHead b { font-size: 16px; font-weight: 700; letter-spacing: -.2px; }
+.heroHead small { font-size: 12.5px; color: var(--dim); }
+.heroIco {
+  width: 44px; height: 44px; flex-shrink: 0; border-radius: 14px; display: grid; place-items: center;
+  color: var(--on-a); background: var(--grad); box-shadow: 0 10px 24px -10px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .3);
+}
+.heroIco svg { width: 20px; height: 20px; }
+.hero .stack, .hero > input, .hero .segmented, .hero .label, .hero .mediaKinds, .hero .switchRow { position: relative; }
+.heroInput input { height: 48px; border-radius: 14px; font-size: 14px; }
+.iconBtn.go {
+  width: 48px; border: 0; border-radius: 14px; color: var(--on-a); background: var(--grad);
+  box-shadow: 0 10px 24px -12px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .3);
+}
+.iconBtn.go:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+.clean .option { padding: 13px 16px; }
+.clean .option .ico { transition: background .2s, color .2s; }
+.clean .option:hover .ico, .clean .option:has(input.task:checked) .ico { background: var(--grad); color: var(--on-a); }
+.quick { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 14px 2px 0; }
+.quick .link { margin-left: auto; }
+.chip { cursor: pointer; user-select: none; }
+.chip input { display: none; }
+.chip span {
+  display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px 7px 11px; border-radius: 99px;
+  font-size: 12.5px; font-weight: 600; color: var(--muted);
+  background: var(--i-bg); border: 1px solid var(--i-border); transition: all .2s;
+}
+.chip span svg { width: 14px; height: 14px; }
+.chip:hover span { color: var(--text); border-color: var(--i-hover); }
+.chip input:checked + span { color: var(--on-a); background: var(--grad); border-color: transparent; box-shadow: 0 6px 18px -10px var(--glow); }
+.primary.big { margin-top: 18px; padding: 16px; border-radius: 16px; font-size: 15px; font-weight: 700; letter-spacing: .2px; }
 
 /* linhas com chave liga/desliga */
 .switchRow { display: flex; align-items: center; gap: 14px; padding: 13px 0; }
@@ -612,9 +768,9 @@ input[type=range] { flex: 1; accent-color: var(--a); }
    ===================================================================== */
 .activity {
   position: sticky; top: 0; align-self: start; display: flex; flex-direction: column;
-  padding: 16px; border-radius: var(--r); border: 1px solid var(--line);
-  background: linear-gradient(170deg, color-mix(in srgb, var(--a) 9%, rgba(0, 0, 0, .22)), rgba(0, 0, 0, .26));
-  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, .7);
+  padding: 16px; border-radius: var(--r); border: 1px solid var(--i-border); border-top-color: var(--i-top);
+  background: linear-gradient(170deg, color-mix(in srgb, var(--a) 7%, transparent), transparent 55%), var(--i-bg);
+  box-shadow: var(--i-shadow), 0 18px 40px -24px rgba(0, 0, 0, .7);
   transition: border-color .3s, box-shadow .3s;
 }
 .activity.running { border-color: color-mix(in srgb, var(--a) 45%, transparent); box-shadow: 0 18px 50px -20px var(--glow); }
@@ -800,12 +956,13 @@ input[type=range] { flex: 1; accent-color: var(--a); }
   background: radial-gradient(60px 50px at 25% 40%, var(--b1), transparent 70%), radial-gradient(60px 50px at 80% 70%, var(--a), transparent 70%), var(--bg);
 }
 .sPrev::after { content: ""; position: absolute; inset: 12px 14px; border-radius: 9px; }
-.style[data-s="solido"] .sPrev::after { background: color-mix(in srgb, var(--bg), #fff 9%); }
+/* miniaturas: cada uma usa os mesmos valores do estilo de verdade */
+.style[data-s="solido"] .sPrev::after { background: color-mix(in srgb, var(--bg) 55%, #121217); border: 1px solid rgba(255, 255, 255, .07); box-shadow: 0 6px 14px -8px rgba(0, 0, 0, .9); }
 .style[data-s="translucido"] .sPrev::after { background: rgba(255, 255, 255, .07); border: 1px solid rgba(255, 255, 255, .1); }
-.style[data-s="vidro"] .sPrev::after { background: rgba(255, 255, 255, .12); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, .18); }
-.style[data-s="glass"] .sPrev::after { background: linear-gradient(145deg, rgba(255, 255, 255, .3), rgba(255, 255, 255, .08)); backdrop-filter: blur(10px) saturate(200%); border: 1px solid rgba(255, 255, 255, .4); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6); }
-.style[data-s="acrilico"] .sPrev::after { background: color-mix(in srgb, var(--a) 30%, rgba(20, 20, 30, .5)); backdrop-filter: blur(8px); border: 1px solid color-mix(in srgb, var(--a) 40%, transparent); }
-.style[data-s="neon"] .sPrev::after { background: rgba(0, 0, 0, .55); border: 1px solid var(--a); box-shadow: 0 0 12px var(--glow), inset 0 0 10px -4px var(--glow); }
+.style[data-s="vidro"] .sPrev::after { background: linear-gradient(165deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .03)), rgba(10, 10, 16, .3); backdrop-filter: blur(9px) saturate(115%); border: 1px solid rgba(255, 255, 255, .12); border-top-color: rgba(255, 255, 255, .22); }
+.style[data-s="glass"] .sPrev::after { background: linear-gradient(135deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .04) 45%, rgba(255, 255, 255, .1)); backdrop-filter: blur(9px) saturate(125%); border: 1px solid rgba(255, 255, 255, .2); border-top-color: rgba(255, 255, 255, .5); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35); }
+.style[data-s="acrilico"] .sPrev::after { background: linear-gradient(165deg, color-mix(in srgb, var(--a) 16%, rgba(14, 14, 20, .6)), color-mix(in srgb, var(--a) 6%, rgba(10, 10, 16, .7))); backdrop-filter: blur(9px); border: 1px solid color-mix(in srgb, var(--a) 24%, transparent); }
+.style[data-s="neon"] .sPrev::after { background: rgba(5, 5, 9, .8); border: 1px solid color-mix(in srgb, var(--a) 70%, transparent); box-shadow: 0 0 12px -2px var(--glow), inset 0 0 12px -6px var(--glow); }
 
 /* =====================================================================
    TELA DE ABERTURA

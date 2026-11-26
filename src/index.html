@@ -44,10 +44,32 @@
   <!-- entrada obrigatória: o app só libera depois de conectar um token válido -->
   <div class="gate" id="gate">
     <div class="gateBox">
-      <img src="kitty.png" alt="" class="gatePic" />
-      <h1 class="spLogo gateLogo">tomalerda</h1>
-      <p class="gateSub" id="gateSub">Conecte seu token do Discord pra começar.</p>
-      <div id="gateSlot"></div>
+      <div class="gateHead">
+        <img src="kitty.png" alt="" class="gatePic" />
+        <h1 class="spLogo gateLogo">tomalerda</h1>
+        <span class="gateVer" id="gateVer" hidden></span>
+      </div>
+      <p class="gateSub" id="gateSub">Cole seu token pra entrar no painel.</p>
+
+      <div class="gateSaved" id="gateSaved" hidden>
+        <p class="gateLabel">Contas salvas</p>
+        <div class="gateAccs" id="gateAccs"></div>
+        <div class="gateOr"><span>ou cole um token novo</span></div>
+      </div>
+
+      <p class="gateLabel">Token de acesso</p>
+      <div class="gateField">
+        <svg viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.3-9.3M17 6l3 3M14.5 8.5l2.5 2.5"/></svg>
+        <input id="gateToken" type="password" placeholder="Cole seu token aqui…" autocomplete="off" spellcheck="false" />
+        <button class="gateEye" id="gateEye" title="Mostrar/ocultar"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
+      <div class="gateRow">
+        <label class="gateCheck"><input type="checkbox" id="gateRemember" checked /><span></span>Salvar conta neste PC</label>
+        <div class="gateKind" id="gateKind"><button data-v="user" class="on">Usuário</button><button data-v="bot">Bot</button></div>
+      </div>
+      <button class="gateEnter" id="gateEnter">Entrar <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <p class="gateErr" id="gateErr"></p>
+
       <button class="gateBack" id="gateBack" hidden>← Voltar pra <b id="gateBackName"></b></button>
       <p class="gateWarn">Tudo que o app faz é <b>de verdade</b> — mensagens apagadas não voltam.</p>
     </div>
@@ -145,19 +167,20 @@
           </section>
 
           <!-- ================= PRIVADOS ================= -->
-          <section class="page" data-page="dm">
-            <div class="card" id="cardDmId">
-              <div class="cardHead">
-                <b>Apagar privado por ID</b>
-                <small>Pode ser o ID da conversa ou o ID da pessoa</small>
+          <section class="page clean" data-page="dm">
+            <p class="section">Ação rápida</p>
+            <div class="card hero" id="cardDmId">
+              <div class="heroHead">
+                <span class="heroIco"><i data-i="hash"></i></span>
+                <div><b>Apagar privado por ID</b><small>Pode ser o ID da conversa ou o ID da pessoa</small></div>
               </div>
-              <div class="inputRow">
+              <div class="inputRow heroInput">
                 <input id="dmId" placeholder="ID do PV, do grupo ou da pessoa" />
-                <button class="iconBtn" id="dmGo" title="Apagar agora"><i data-i="trash"></i></button>
+                <button class="iconBtn go" id="dmGo" title="Apagar agora"><i data-i="trash"></i></button>
               </div>
             </div>
 
-            <p class="section">Vários de uma vez</p>
+            <p class="section">Em lote <span class="secNote">marque quantos quiser</span></p>
             <label class="option" id="optFriends">
               <span class="ico"><i data-i="users"></i></span>
               <div class="optText"><b>PV com todos os amigos</b><small>Abre a conversa com cada amigo e apaga</small></div>
@@ -170,15 +193,21 @@
               <input type="checkbox" class="task" value="dms" />
               <span class="box"></span>
             </label>
-            <button class="primary" id="startBtn">Iniciar (0/2)</button>
+            <div class="quick">
+              <label class="chip"><input type="checkbox" data-sync="useWhitelist" /><span><i data-i="lock"></i>Whitelist</span></label>
+              <label class="chip"><input type="checkbox" data-sync="useDelay" /><span><i data-i="sliders"></i>Delay próprio</span></label>
+              <button class="link" data-go="prefs">mais ajustes →</button>
+            </div>
+            <button class="primary big" id="startBtn">Iniciar (0/2)</button>
           </section>
 
           <!-- ================= SERVIDORES ================= -->
-          <section class="page" data-page="servers">
-            <div class="card" id="cardChannel">
-              <div class="cardHead">
-                <b>Um canal</b>
-                <small>Funciona com usuário ou bot</small>
+          <section class="page clean" data-page="servers">
+            <p class="section">Ação rápida</p>
+            <div class="card hero" id="cardChannel">
+              <div class="heroHead">
+                <span class="heroIco"><i data-i="hash"></i></span>
+                <div><b>Um canal</b><small>Funciona com usuário ou bot</small></div>
               </div>
               <div class="stack">
                 <input id="chId" placeholder="ID do canal" />
@@ -190,10 +219,11 @@
               <button class="primary" id="chBtn">Apagar neste canal</button>
             </div>
 
-            <div class="card" id="cardGuild">
-              <div class="cardHead">
-                <b>Servidor inteiro</b>
-                <small>Suas mensagens em todos os canais</small>
+            <p class="section">Servidor inteiro</p>
+            <div class="card hero" id="cardGuild">
+              <div class="heroHead">
+                <span class="heroIco"><i data-i="server"></i></span>
+                <div><b>Todos os canais</b><small>Suas mensagens no servidor inteiro</small></div>
               </div>
               <input id="guildId" placeholder="ID do servidor" />
               <div class="switchRow">
@@ -202,14 +232,20 @@
               </div>
               <button class="primary" id="serverBtn">Apagar no servidor</button>
             </div>
+            <div class="quick">
+              <label class="chip"><input type="checkbox" data-sync="useWhitelist" /><span><i data-i="lock"></i>Whitelist</span></label>
+              <label class="chip"><input type="checkbox" data-sync="useDelay" /><span><i data-i="sliders"></i>Delay próprio</span></label>
+              <button class="link" data-go="prefs">mais ajustes →</button>
+            </div>
           </section>
 
           <!-- ================= PALAVRA-CHAVE ================= -->
-          <section class="page" data-page="keyword">
-            <div class="card">
-              <div class="cardHead">
-                <b>Qual palavra?</b>
-                <small>Maiúsculas e minúsculas tanto faz</small>
+          <section class="page clean" data-page="keyword">
+            <p class="section">Ação rápida</p>
+            <div class="card hero">
+              <div class="heroHead">
+                <span class="heroIco"><i data-i="key"></i></span>
+                <div><b>Qual palavra?</b><small>Maiúsculas e minúsculas tanto faz</small></div>
               </div>
               <input id="kwText" placeholder="ex: meu número, endereço, nome..." />
               <p class="label">Onde procurar</p>
@@ -221,14 +257,20 @@
               <input id="kwId" class="targetId" />
               <button class="primary" id="kwBtn">Apagar com essa palavra</button>
             </div>
+            <div class="quick">
+              <label class="chip"><input type="checkbox" data-sync="useWhitelist" /><span><i data-i="lock"></i>Whitelist</span></label>
+              <label class="chip"><input type="checkbox" data-sync="useDelay" /><span><i data-i="sliders"></i>Delay próprio</span></label>
+              <button class="link" data-go="prefs">mais ajustes →</button>
+            </div>
           </section>
 
           <!-- ================= MÍDIAS ================= -->
-          <section class="page" data-page="media">
-            <div class="card">
-              <div class="cardHead">
-                <b>Fotos, vídeos, áudios e arquivos</b>
-                <small>Só mensagens com anexo — texto puro fica</small>
+          <section class="page clean" data-page="media">
+            <p class="section">Ação rápida</p>
+            <div class="card hero">
+              <div class="heroHead">
+                <span class="heroIco"><i data-i="image"></i></span>
+                <div><b>Fotos, vídeos, áudios e arquivos</b><small>Só mensagens com anexo — texto puro fica</small></div>
               </div>
               <div class="mediaKinds">
                 <span><i data-i="image"></i>Fotos</span>
@@ -244,6 +286,11 @@
               </div>
               <input id="mdId" class="targetId" />
               <button class="primary" id="mdBtn">Apagar mídias e arquivos</button>
+            </div>
+            <div class="quick">
+              <label class="chip"><input type="checkbox" data-sync="useWhitelist" /><span><i data-i="lock"></i>Whitelist</span></label>
+              <label class="chip"><input type="checkbox" data-sync="useDelay" /><span><i data-i="sliders"></i>Delay próprio</span></label>
+              <button class="link" data-go="prefs">mais ajustes →</button>
             </div>
           </section>
 

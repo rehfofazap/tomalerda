@@ -484,24 +484,146 @@ $$(".house").forEach((h) => h.addEventListener("click", () => setHouse(+h.datase
 $("houseRemove").addEventListener("click", () => setHouse(0));
 
 // ================= conta =================
-// Entrada obrigatória: enquanto não houver token aceito pelo Discord, o cartão
-// de token fica dentro da tela de entrada, que cobre o app inteiro.
+// Entrada obrigatória: a tela de entrada cobre o app até um token ser aceito pelo
+// Discord. Nela ficam as contas salvas (um clique) e o campo pra colar um token novo.
+// Contas salvas: o token fica no Cofre do Windows (save_account); aqui só nome/foto/@.
+let contas = [];
+try { contas = JSON.parse(localStorage.getItem("contas") || "[]").filter((c) => c && isId(c.id)); } catch {}
+const saveContas = () => { try { localStorage.setItem("contas", JSON.stringify(contas)); } catch {} };
+function fillAvatar(av, u) {
+  const name = u.global_name || u.name || u.username || "?";
+  av.textContent = "";
+  // só monta a URL da foto se id e hash tiverem o formato esperado
+  if (u.avatar && isId(u.id) && /^(a_)?[0-9a-f]{32}$/.test(u.avatar)) {
+    const img = new Image();
+    img.alt = "";
+    img.src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=128`;
+    img.onerror = () => (av.textContent = name[0].toUpperCase());
+    av.append(img);
+  } else {
+    av.textContent = name[0].toUpperCase();
+  }
+}
+function upsertConta(u) {
+  const c = { id: u.id, name: u.global_name || u.username, username: u.username, avatar: u.avatar || null, bot: !!u.bot };
+  contas = [c, ...contas.filter((x) => x.id !== u.id)].slice(0, 12);
+  saveContas();
+}
+async function removeConta(id) {
+  await invoke("forget_account", { id }).catch(() => {});
+  contas = contas.filter((x) => x.id !== id);
+  saveContas();
+  renderContas();
+}
+function renderContas() {
+  const box = $("gateAccs");
+  box.innerHTML = "";
+  $("gateSaved").hidden = !contas.length;
+  for (const c of contas) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "gateAcc";
+    const av = document.createElement("span");
+    av.className = "avatar";
+    fillAvatar(av, c);
+    const t = document.createElement("span");
+    t.className = "meText";
+    const n = document.createElement("b");
+    n.textContent = c.name;
+    const s = document.createElement("small");
+    s.textContent = `${c.username}${c.bot ? " (bot)" : ""} · ${c.id}`;
+    t.append(n, s);
+    const x = document.createElement("span");
+    x.className = "gateAccX";
+    x.title = "Tirar esta conta do PC";
+    x.innerHTML = `<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>`;
+    x.addEventListener("click", (e) => { e.stopPropagation(); removeConta(c.id); });
+    b.append(av, t, x);
+    b.addEventListener("click", () => enterSaved(c, b));
+    box.append(b);
+  }
+}
 function lockApp() {
-  $("gateSlot").append($("tokenCard"));
   $("gate").classList.remove("out");
   document.body.classList.add("locked");
   document.querySelector(".app").inert = true;
-  setTimeout(() => $("token").focus(), 50);
+  $("gateErr").textContent = "";
+  renderContas();
+  setTimeout(() => $("gateToken").focus(), 50);
 }
 function unlockApp() {
   if (!document.body.classList.contains("locked")) return;
-  document.querySelector('section[data-page="settings"]').append($("tokenCard"));
   $("gate").classList.add("out");
   document.body.classList.remove("locked");
   document.querySelector(".app").inert = false;
   go("home");
 }
 lockApp();
+
+// Entra com um token: confere no Discord, libera o app e (se pedido) guarda a conta.
+async function login(tk, bot, remember) {
+  const u = await invoke("check_token", { token: tk, isBot: bot });
+  state.user = u;
+  state.token = tk;
+  state.tokenType = bot ? "bot" : "user";
+  state.prev = null;
+  $("token").value = tk;
+  $$("#tokenType button").forEach((b) => b.classList.toggle("on", b.dataset.v === state.tokenType));
+  unlockApp();
+  showUser(u);
+  log(`Conectado como ${u.global_name || u.username}`, "ok");
+  if (remember) {
+    try {
+      await invoke("save_account", { id: u.id, token: tk, isBot: bot });
+      upsertConta(u);
+    } catch (e) { log(`Não deu pra salvar a conta: ${e}`, "warn"); }
+  } else if (contas.some((c) => c.id === u.id)) {
+    upsertConta(u); // já estava salva: só atualiza nome e foto
+  }
+  $("remember").checked = contas.some((c) => c.id === u.id);
+  return u;
+}
+async function enterSaved(c, btn) {
+  $("gateErr").textContent = "";
+  $$(".gateAcc").forEach((b) => (b.disabled = true));
+  try {
+    const saved = await invoke("load_account", { id: c.id });
+    if (!saved) {
+      $("gateErr").textContent = "O token dessa conta não está mais salvo neste PC.";
+      await removeConta(c.id);
+      return;
+    }
+    const [tk, bot] = saved;
+    await login(tk, bot, true);
+  } catch (e) {
+    $("gateErr").textContent = `${c.name}: ${e}`;
+  } finally {
+    $$(".gateAcc").forEach((b) => (b.disabled = false));
+  }
+}
+async function gateEnter() {
+  const tk = $("gateToken").value.trim();
+  if (!tk) { $("gateErr").textContent = "Cole o token primeiro."; return; }
+  const btn = $("gateEnter");
+  btn.disabled = true;
+  $("gateErr").textContent = "";
+  try {
+    await login(tk, $("gateKind").querySelector(".on").dataset.v === "bot", $("gateRemember").checked);
+    $("gateToken").value = "";
+    $("gateToken").type = "password";
+  } catch (e) {
+    $("gateErr").textContent = `${e}`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+$("gateEnter").addEventListener("click", gateEnter);
+$("gateToken").addEventListener("keydown", (e) => e.key === "Enter" && !$("gateEnter").disabled && gateEnter());
+$("gateEye").addEventListener("click", () => {
+  const t = $("gateToken");
+  t.type = t.type === "password" ? "text" : "password";
+});
+$$("#gateKind button").forEach((b) => b.addEventListener("click", () => $$("#gateKind button").forEach((x) => x.classList.toggle("on", x === b))));
 $("token").addEventListener("keydown", (e) => e.key === "Enter" && !$("checkBtn").disabled && connect(true));
 
 $("tokenType").addEventListener("change", () => (state.tokenType = segVal("tokenType")));
@@ -521,17 +643,7 @@ function showUser(u) {
   $("helloSub").textContent = u.bot ? "Conta de bot" : "Conta de usuário";
   $("userName").textContent = name;
   $("userTag").textContent = u.username;
-  const av = $("avatar");
-  av.textContent = "";
-  // só monta a URL da foto se id e hash tiverem o formato esperado
-  if (u.avatar && isId(u.id) && /^(a_)?[0-9a-f]{32}$/.test(u.avatar)) {
-    const img = new Image();
-    img.src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=128`;
-    img.onerror = () => (av.textContent = name[0].toUpperCase());
-    av.append(img);
-  } else {
-    av.textContent = name[0].toUpperCase();
-  }
+  fillAvatar($("avatar"), u);
   $("switchBtn").hidden = false;
 }
 
@@ -555,7 +667,7 @@ function switchAccount() {
   const p = state.prev;
   $("gateBack").hidden = !p;
   if (p) $("gateBackName").textContent = p.user.global_name || p.user.username;
-  $("gateSub").textContent = p ? "Cole o token da outra conta." : "Conecte seu token do Discord pra começar.";
+  $("gateSub").textContent = p ? "Escolha outra conta ou cole um token novo." : "Cole seu token pra entrar no painel.";
   lockApp();
 }
 function backToPrev() {
@@ -582,21 +694,10 @@ async function connect(fromButton) {
   try {
     const tk = $("token").value.trim();
     if (!tk) throw "cole o token primeiro.";
-    const u = await invoke("check_token", { token: tk, isBot: isBot() });
-    state.user = u;
-    state.token = tk;
-    state.prev = null;
-    unlockApp();
-    showUser(u);
-    log(`Conectado como ${u.global_name || u.username}`, "ok");
-    if (fromButton) {
-      if ($("remember").checked) {
-        await invoke("save_token", { token: tk, isBot: isBot() });
-        toast("Token guardado no Cofre do Windows.");
-      } else {
-        await invoke("forget_token");
-      }
-    }
+    const remember = $("remember").checked;
+    const u = await login(tk, isBot(), fromButton && remember);
+    if (fromButton && remember) toast("Conta guardada no Cofre do Windows.");
+    if (fromButton && !remember && contas.some((c) => c.id === u.id)) await removeConta(u.id);
   } catch (e) {
     $("account").textContent = `Erro: ${e}`;
   } finally {
@@ -605,23 +706,30 @@ async function connect(fromButton) {
 }
 
 $("remember").addEventListener("change", async () => {
-  if (!$("remember").checked) {
-    await invoke("forget_token");
-    toast("Token apagado deste PC.");
+  if (!state.user) return;
+  if ($("remember").checked) {
+    try {
+      await invoke("save_account", { id: state.user.id, token: state.token, isBot: isBot() });
+      upsertConta(state.user);
+      toast("Conta guardada no Cofre do Windows.");
+    } catch (e) { toast(`Não deu pra salvar: ${e}`); $("remember").checked = false; }
+  } else {
+    await removeConta(state.user.id);
+    toast("Conta apagada deste PC.");
   }
 });
 
-// se tiver token guardado, conecta sozinho ao abrir
+// Versões até a 0.1.10 guardavam um token só: vira uma conta salva da tela de entrada.
 (async () => {
   try {
-    const saved = await invoke("load_token");
-    if (!saved) return;
-    const [token, bot] = saved;
-    $("token").value = token;
-    state.tokenType = bot ? "bot" : "user";
-    $$("#tokenType button").forEach((b) => b.classList.toggle("on", b.dataset.v === state.tokenType));
-    $("remember").checked = true;
-    connect(false);
+    const old = await invoke("load_token");
+    if (!old) return;
+    const [tk, bot] = old;
+    const u = await invoke("check_token", { token: tk, isBot: bot });
+    await invoke("save_account", { id: u.id, token: tk, isBot: bot });
+    upsertConta(u);
+    await invoke("forget_token");
+    if (document.body.classList.contains("locked")) renderContas();
   } catch {}
 })();
 
@@ -657,6 +765,17 @@ const protectedId = (...ids) => $("useWhitelist").checked && ids.some((id) => id
 
 // ================= opções =================
 $("useDelay").addEventListener("change", () => $("delayBox").classList.toggle("show", $("useDelay").checked));
+// atalhos (whitelist / delay) nas páginas de limpeza: espelho das chaves de Preferências
+function syncChips() {
+  $$("[data-sync]").forEach((c) => (c.checked = $(c.dataset.sync).checked));
+}
+$$("[data-sync]").forEach((c) => c.addEventListener("change", () => {
+  const orig = $(c.dataset.sync);
+  orig.checked = c.checked;
+  orig.dispatchEvent(new Event("change"));
+}));
+["useWhitelist", "useDelay"].forEach((id) => $(id).addEventListener("change", syncChips));
+setTimeout(syncChips);
 $("useDates").addEventListener("change", () => $("dateBox").classList.toggle("show", $("useDates").checked));
 $("delay").addEventListener("input", () => ($("delayVal").textContent = `${$("delay").value} ms`));
 
@@ -998,7 +1117,7 @@ try {
   });
   // versão instalada (vem do próprio app) na barra lateral e na abertura
   window.__TAURI__.app.getVersion().then((v) => {
-    for (const [id, txt] of [["appVer", `v${v}`], ["spVer", `versão ${v}`]]) {
+    for (const [id, txt] of [["appVer", `v${v}`], ["spVer", `versão ${v}`], ["gateVer", `v${v}`]]) {
       const el = $(id);
       if (el) { el.textContent = txt; el.hidden = false; }
     }

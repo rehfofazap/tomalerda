@@ -98,6 +98,39 @@ fn forget_token() {
     }
 }
 
+// Contas salvas: um token por conta no Cofre do Windows ("conta:<id do Discord>").
+// Nome, foto e @ ficam no app (não são segredo); o token só aqui.
+fn conta(id: &str) -> Result<keyring::Entry, String> {
+    if id.is_empty() || id.len() > 22 || !id.bytes().all(|b| b.is_ascii_digit()) {
+        return Err("conta inválida".into());
+    }
+    keyring::Entry::new("tomalerda", &format!("conta:{id}")).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn save_account(id: String, token: String, is_bot: bool) -> Result<(), String> {
+    let t = token.trim();
+    if t.is_empty() || t.len() > 200 || !t.bytes().all(|b| b.is_ascii_graphic()) {
+        return Err("Token inválido.".into());
+    }
+    let kind = if is_bot { "bot" } else { "user" };
+    conta(&id)?.set_password(&format!("{kind}:{t}")).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn load_account(id: String) -> Option<(String, bool)> {
+    let saved = conta(&id).ok()?.get_password().ok()?;
+    let (kind, token) = saved.split_once(':')?;
+    Some((token.to_string(), kind == "bot"))
+}
+
+#[tauri::command]
+fn forget_account(id: String) {
+    if let Ok(v) = conta(&id) {
+        let _ = v.delete_credential();
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Atualização: o app procura versão nova; só instala pacote assinado pela
 // chave do tomalerda (a chave pública fica no tauri.conf.json).
@@ -336,6 +369,9 @@ pub fn run() {
             stop_deletion,
             api_call,
             save_token,
+            save_account,
+            load_account,
+            forget_account,
             load_token,
             forget_token,
             check_update,
