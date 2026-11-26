@@ -102,6 +102,7 @@
         <p class="navTitle">Ajustes</p>
         <button class="navItem" data-page="settings"><i data-i="lock"></i>Conta e token</button>
         <button class="navItem" data-page="prefs"><i data-i="sliders"></i>Preferências</button>
+        <button class="navItem" data-page="whitelist"><i data-i="shield"></i>Whitelist</button>
         <button class="navItem" data-page="look"><i data-i="palette"></i>Aparência</button>
       </nav>
 
@@ -111,8 +112,14 @@
         <span class="updTxt"><b id="updText">Atualizar</b><small>versão nova disponível</small></span>
       </button>
 
-      <div class="meRow">
-        <button class="me" data-go="settings">
+      <div class="meRow userWrap">
+        <!-- menu da conta: abre clicando no perfil -->
+        <div class="userMenu" id="userMenu" hidden>
+          <button id="umAccount"><i data-i="lock"></i>Conta e token</button>
+          <button id="umSwitch"><svg viewBox="0 0 24 24"><path d="M7 4 3 8l4 4M3 8h13a4 4 0 0 1 4 4M17 20l4-4-4-4M21 16H8a4 4 0 0 1-4-4"/></svg>Trocar de conta</button>
+          <button id="umLogout" class="out"><i data-i="logout"></i>Sair da conta</button>
+        </div>
+        <button class="me" id="meBtn" title="Conta">
           <div class="avatar" id="avatar">?</div>
           <div class="meText"><b id="userName">Desconectado</b><small id="userTag">clique pra conectar</small></div>
         </button>
@@ -176,21 +183,60 @@
               </div>
               <div class="inputRow heroInput">
                 <input id="dmId" placeholder="ID do PV, do grupo ou da pessoa" />
-                <button class="iconBtn go" id="dmGo" title="Apagar agora"><i data-i="trash"></i></button>
+                <button class="iconBtn go" id="dmFind" title="Ver de quem é"><i data-i="search"></i></button>
+              </div>
+              <!-- quem é o dono do ID (aparece sozinho ao colar) -->
+              <div class="target" id="dmTarget" hidden>
+                <span class="avatar tAv" id="dmTAv">?</span>
+                <div class="tText"><b id="dmTName"></b><small id="dmTSub"></small></div>
+                <button class="tDel" id="dmGo" title="Apagar suas mensagens aqui"><i data-i="trash"></i>Apagar</button>
               </div>
             </div>
 
-            <p class="section">Em lote <span class="secNote">marque quantos quiser</span></p>
-            <label class="option" id="optFriends">
-              <span class="ico"><i data-i="users"></i></span>
-              <div class="optText"><b>PV com todos os amigos</b><small>Abre a conversa com cada amigo e apaga</small></div>
-              <input type="checkbox" class="task" value="friends" />
-              <span class="box"></span>
-            </label>
-            <label class="option" id="optDms">
-              <span class="ico"><i data-i="chat"></i></span>
-              <div class="optText"><b>PVs e DMs abertas</b><small>Cada conversa e grupo da sua lista</small></div>
-              <input type="checkbox" class="task" value="dms" />
+            <p class="section">Ações adicionais <span class="secNote">marque quantas quiser</span></p>
+            <div class="option optWrap">
+              <label class="optMain">
+                <span class="ico"><i data-i="users"></i></span>
+                <div class="optText"><b>Apagar PV com todos os amigos</b><small>Abre a conversa com cada amigo e apaga</small></div>
+                <input type="checkbox" class="task" value="friends" />
+                <span class="box"></span>
+              </label>
+              <div class="optSub">
+                <span>Remover amizade quando apagar o PV</span>
+                <label class="toggle"><input type="checkbox" id="unfriendAfter" /><span></span></label>
+              </div>
+            </div>
+            <div class="option optWrap">
+              <label class="optMain">
+                <span class="ico"><i data-i="chat"></i></span>
+                <div class="optText"><b>Apagar PVs e DMs abertas</b><small>Cada conversa e grupo da sua lista</small></div>
+                <input type="checkbox" class="task" value="dms" />
+                <span class="box"></span>
+              </label>
+              <div class="optSub">
+                <span>Fechar conversa após apagar <em>(grupo não sai)</em></span>
+                <label class="toggle"><input type="checkbox" id="closeAfter" /><span></span></label>
+              </div>
+            </div>
+            <div class="option optWrap">
+              <label class="optMain">
+                <span class="ico"><i data-i="key"></i></span>
+                <div class="optText"><b>Apagar msgs por palavra-chave</b><small>Em todos os PVs e grupos</small></div>
+                <input type="checkbox" class="task" value="keyword" id="kwTask" />
+                <span class="box"></span>
+              </label>
+              <div class="optSub kwSub">
+                <div class="inputRow">
+                  <input id="batchKw" placeholder="Digite a palavra-chave…" />
+                  <button class="iconBtn go" id="batchKwAdd" title="Adicionar palavra"><i data-i="plus"></i></button>
+                </div>
+                <ul class="chips kwChips" id="batchKwList"></ul>
+              </div>
+            </div>
+            <label class="option">
+              <span class="ico"><i data-i="image"></i></span>
+              <div class="optText"><b>Apagar mídias e arquivos</b><small>Fotos, vídeos, áudios e anexos em todos os PVs</small></div>
+              <input type="checkbox" class="task" value="media" />
               <span class="box"></span>
             </label>
             <div class="quick">
@@ -198,7 +244,7 @@
               <label class="chip"><input type="checkbox" data-sync="useDelay" /><span><i data-i="sliders"></i>Delay próprio</span></label>
               <button class="link" data-go="prefs">mais ajustes →</button>
             </div>
-            <button class="primary big" id="startBtn">Iniciar (0/2)</button>
+            <button class="primary big" id="startBtn">Iniciar processos (0/4)</button>
           </section>
 
           <!-- ================= SERVIDORES ================= -->
@@ -439,10 +485,6 @@
           <section class="page" data-page="prefs">
             <div class="card list">
               <div class="switchRow">
-                <div><b>Usar whitelist</b><small>Nunca mexe nos IDs protegidos abaixo</small></div>
-                <label class="toggle"><input type="checkbox" id="useWhitelist" /><span></span></label>
-              </div>
-              <div class="switchRow">
                 <div><b>Delay customizado</b><small>Tempo entre cada ação — padrão 1,2 s</small></div>
                 <label class="toggle"><input type="checkbox" id="useDelay" /><span></span></label>
               </div>
@@ -460,13 +502,44 @@
               </div>
             </div>
 
-            <p class="section">Whitelist</p>
-            <div class="card">
-              <div class="inputRow">
-                <input id="wlInput" placeholder="ID de pessoa, conversa, canal ou servidor" />
-                <button class="iconBtn" id="wlAdd" title="Adicionar"><i data-i="plus"></i></button>
+            <div class="quick">
+              <button class="link" data-go="whitelist">Whitelist (IDs protegidos) →</button>
+            </div>
+          </section>
+
+          <!-- ================= WHITELIST ================= -->
+          <section class="page" data-page="whitelist">
+            <div class="card list">
+              <div class="switchRow">
+                <div><b>Usar whitelist</b><small>Nunca mexe nos IDs protegidos abaixo — salva sozinho</small></div>
+                <label class="toggle"><input type="checkbox" id="useWhitelist" /><span></span></label>
               </div>
-              <ul class="chips" id="wlList"></ul>
+            </div>
+            <div class="card wlCard">
+              <div class="heroHead">
+                <span class="ico"><i data-i="users"></i></span>
+                <div><b>Usuários e DMs</b><small>IDs de pessoas, PVs, grupos ou canais que não serão afetados</small></div>
+              </div>
+              <div class="inputRow">
+                <input id="wlInput" placeholder="Insira o ID do usuário ou da DM" />
+                <button class="iconBtn go" id="wlAdd" title="Adicionar"><i data-i="plus"></i></button>
+              </div>
+              <ul class="wlList" id="wlList" data-empty="Nenhum usuário na whitelist."></ul>
+            </div>
+            <div class="card wlCard">
+              <div class="heroHead">
+                <span class="ico"><i data-i="server"></i></span>
+                <div><b>Servidores</b><small>Servidores protegidos das ações em massa (sair de todos, menções...)</small></div>
+              </div>
+              <div class="inputRow">
+                <input id="wlgInput" placeholder="Insira o ID do servidor" />
+                <button class="iconBtn go" id="wlgAdd" title="Adicionar"><i data-i="plus"></i></button>
+              </div>
+              <ul class="wlList" id="wlgList" data-empty="Nenhum servidor na whitelist."></ul>
+            </div>
+            <div class="wlStats">
+              <div class="card"><b id="wlCountU">0</b><small>Usuários protegidos</small></div>
+              <div class="card"><b id="wlCountG">0</b><small>Servidores protegidos</small></div>
             </div>
           </section>
 
@@ -566,6 +639,7 @@
           </div>
           <div class="now">
             <div class="nowTop"><span id="taskLabel">Nenhum processo</span><b id="pct"></b></div>
+            <div class="nowCount" id="countLine"></div>
             <div class="bar"><div id="bar"></div></div>
             <div class="nowFoot"><span id="eta"></span><span id="rate"></span></div>
           </div>

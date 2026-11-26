@@ -48,6 +48,12 @@ async fn start_deletion(
 
 /// Pedido avulso à API (modo ausente, HypeSquad). Devolve [status, corpo].
 /// As rotas aceitas são conferidas em `discord::Client::raw`.
+/// Prévia de quem é um ID (foto, nome) na tela de apagar privado.
+#[tauri::command]
+async fn lookup_target(token: String, is_bot: bool, id: String) -> Result<discord::Target, String> {
+    discord::Client::new(&token, is_bot, None)?.lookup(id.trim()).await
+}
+
 #[tauri::command]
 async fn api_call(
     token: String,
@@ -368,6 +374,7 @@ pub fn run() {
             start_deletion,
             stop_deletion,
             api_call,
+            lookup_target,
             save_token,
             save_account,
             load_account,

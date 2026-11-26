@@ -33,6 +33,7 @@ const ICONS = {
   reply: '<path d="M9 17 4 12l5-5"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/>',
   eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   check: '<path d="m5 12 5 5L20 7"/>',
   skip: '<path d="M5 5v14l9-7z"/><path d="M18 5v14"/>',
   pulse: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
@@ -48,7 +49,8 @@ const state = {
   tokenType: "user",
   user: null,
   token: null, // só é preenchido depois que o Discord aceitou o token
-  whitelist: [],
+  whitelist: [], // pessoas, PVs, grupos, canais
+  wlGuilds: [],  // servidores
   queue: [],
   current: null,
   base: { scanned: 0, deleted: 0, skipped: 0 },
@@ -69,7 +71,8 @@ const PAGES = {
   hypesquad: { title: "HypeSquad", sub: "Troque a casa que aparece no seu perfil." },
   idle:      { title: "Modo ausente", sub: "O app cuida da conta enquanto você está fora." },
   settings:  { title: "Conta e token", sub: "Conecte a conta que será usada." },
-  prefs:     { title: "Preferências", sub: "Whitelist, velocidade e período — valem pra tudo." },
+  prefs:     { title: "Preferências", sub: "Velocidade e período — valem pra tudo." },
+  whitelist: { title: "Whitelist", sub: "Gerencie usuários e servidores protegidos." },
   look:      { title: "Aparência", sub: "Tema e fundo do app." },
 };
 
@@ -142,13 +145,28 @@ function showProgress(p) {
   $("sSkipped").textContent = state.base.skipped + p.skipped;
   $("lDeleted").textContent = p.dryRun ? "encontradas" : "feitas";
   state.lastP = p;
+  // várias conversas: mostra em qual está (ex.: "PVs e DMs abertas · 6/14")
+  if (state.current) $("taskLabel").textContent = p.steps > 0 && p.step > 0 && !p.counting ? `${state.current.label} · ${p.step}/${p.steps}` : state.current.label;
+  // o tempo restante conta a partir de quando terminou de contar as mensagens
+  if (p.counting) state.countingSeen = true;
+  else if (state.countingSeen && !state.delStart) state.delStart = Date.now();
+  // total de mensagens e quantas já foram
+  const n = (x) => Number(x || 0).toLocaleString("pt-BR");
+  const total = p.grandTotal != null ? p.grandTotal : !p.steps ? p.total : null;
+  const cl = $("countLine");
+  if (p.counting) cl.innerHTML = `Contando suas mensagens… <b>${n(p.step)}/${n(p.steps)}</b> conversas · <b>${n(p.grandTotal)}</b> achadas`;
+  else if (total != null) cl.innerHTML = `<b>${n(p.deleted)}</b> de <b>${n(total)}</b> mensage${total === 1 ? "m apagada" : "ns apagadas"}`;
+  else if (state.running) cl.innerHTML = `<b>${n(p.deleted)}</b> apagada${p.deleted === 1 ? "" : "s"}`;
+  else cl.textContent = "";
   showEta();
   const bar = $("bar").parentElement;
-  if (p.total) {
+  // % do processo inteiro vem pronta do Rust (já conta várias conversas); senão, pelo total
+  const pc = p.percent != null ? p.percent : p.total ? ((p.deleted + p.skipped) / p.total) * 100 : null;
+  if (pc != null) {
     bar.classList.remove("indeterminate");
-    const pc = Math.min(100, ((p.deleted + p.skipped) / p.total) * 100);
-    $("bar").style.width = pc + "%";
-    $("pct").textContent = `${Math.floor(pc)}%`;
+    const v = Math.min(100, Math.max(0, pc));
+    $("bar").style.width = v + "%";
+    $("pct").textContent = `${Math.floor(v)}%`;
   } else {
     bar.classList.toggle("indeterminate", state.running);
     $("pct").textContent = "";
@@ -168,10 +186,18 @@ function fmtDur(ms) {
 function showEta() {
   const p = state.lastP;
   if (!state.running || !p || !state.taskStart) { $("eta").textContent = ""; $("rate").textContent = ""; return; }
-  const el = Date.now() - state.taskStart;
+  if (p.counting) { $("eta").textContent = "contando antes de apagar…"; $("rate").textContent = ""; return; }
+  const el = Date.now() - (state.delStart || state.taskStart);
   const done = p.deleted + p.skipped;
   const perMin = el > 5000 && done ? (done / el) * 60000 : 0;
   $("rate").textContent = perMin ? `${perMin >= 10 ? Math.round(perMin) : perMin.toFixed(1)} por min` : "";
+  // com % (várias conversas, ou contagem feita antes): tempo que falta = proporcional
+  if (p.percent != null && (p.steps > 0 || !p.total)) {
+    if (p.percent >= 99.5) { $("eta").textContent = "terminando…"; return; }
+    if (p.percent < 1 || el < 4000) { $("eta").textContent = "calculando o tempo…"; return; }
+    $("eta").textContent = `falta ~${fmtDur((el * (100 - p.percent)) / p.percent)}`;
+    return;
+  }
   if (!p.total) {
     $("eta").textContent = `rodando há ${fmtDur(el)}`;
     return;
@@ -236,7 +262,7 @@ function baseConfig() {
     delayMs: $("useDelay").checked ? parseInt($("delay").value, 10) : 1200,
     dryRun: false,
     onlyAttachments: false,
-    whitelist: $("useWhitelist").checked ? state.whitelist : [],
+    whitelist: $("useWhitelist").checked ? [...state.whitelist, ...state.wlGuilds] : [],
     leaveGroups: false,
     packagePath: null,
     packageScope: null,
@@ -277,6 +303,9 @@ async function runNext() {
   state.taskStart = Date.now();
   state.taskDelay = task.config.delayMs || 1200;
   state.lastP = null;
+  state.delStart = 0;
+  state.countingSeen = false;
+  $("countLine").textContent = "";
   $("taskLabel").textContent = task.label;
   $("bar").style.width = "0";
   log(`▶ ${task.label}`, "ok");
@@ -335,7 +364,7 @@ $$(".expandable").forEach((opt) => {
   });
   toggle.addEventListener("change", () => toggle.checked && opt.classList.add("open"));
 });
-$$(".option:not(.expandable)").forEach((opt) => {
+$$(".option:not(.expandable):not(.optWrap)").forEach((opt) => {
   const t = opt.querySelector(".toggle input");
   if (t) opt.addEventListener("click", (e) => { if (!e.target.closest(".toggle")) t.click(); });
 });
@@ -347,26 +376,127 @@ function selectedTasks() {
 function updateStartButton() {
   const n = selectedTasks().length;
   const btn = $("startBtn");
-  if (!btn.classList.contains("confirm")) btn.textContent = `Iniciar (${n}/2)`;
+  if (!btn.classList.contains("confirm")) btn.textContent = `Iniciar processos (${n}/4)`;
   btn.disabled = n === 0 || state.running;
 }
 $$(".task").forEach((c) => c.addEventListener("change", updateStartButton));
 
+// palavras-chave das ações adicionais (dá pra pôr várias)
+let batchWords = [];
+try { batchWords = JSON.parse(localStorage.getItem("palavras") || "[]"); } catch {}
+function renderWords() {
+  const ul = $("batchKwList");
+  ul.innerHTML = "";
+  batchWords.forEach((w, i) => {
+    const li = document.createElement("li");
+    li.textContent = w;
+    const rm = document.createElement("button");
+    rm.textContent = "×";
+    rm.title = "Tirar";
+    rm.onclick = () => { batchWords.splice(i, 1); saveWords(); };
+    li.append(rm);
+    ul.append(li);
+  });
+}
+function saveWords() {
+  try { localStorage.setItem("palavras", JSON.stringify(batchWords)); } catch {}
+  renderWords();
+}
+function addWord() {
+  const w = val("batchKw");
+  if (!w) return $("batchKw").focus();
+  if (!batchWords.some((x) => x.toLowerCase() === w.toLowerCase())) batchWords.push(w);
+  $("batchKw").value = "";
+  if (!$("kwTask").checked) { $("kwTask").checked = true; updateStartButton(); }
+  saveWords();
+}
+$("batchKwAdd").addEventListener("click", addWord);
+$("batchKw").addEventListener("keydown", (e) => e.key === "Enter" && addWord());
+renderWords();
+
 $("startBtn").addEventListener("click", () => {
   if (needUser()) return;
+  const sel = selectedTasks();
+  // palavra digitada e não adicionada: vale também
+  if (sel.includes("keyword") && val("batchKw")) addWord();
+  if (sel.includes("keyword") && !batchWords.length) {
+    $("batchKw").focus();
+    return toast("Digite a palavra-chave e clique no +.");
+  }
   guarded($("startBtn"), CONFIRM, function dmTasks() {
-    const labels = { friends: "PVs com todos os amigos", dms: "PVs e DMs abertas" };
-    startQueue(selectedTasks().map((mode) => ({ label: labels[mode], config: { ...baseConfig(), mode } })));
+    const tasks = [];
+    const add = (label, extra) => tasks.push({ label, config: { ...baseConfig(), ...extra } });
+    // ordem: palavra e mídias antes, porque "fechar conversa" tira o PV da lista
+    if (sel.includes("keyword")) batchWords.forEach((w) => add(`Palavra “${w}” nos PVs`, { mode: "dms", content: w }));
+    if (sel.includes("media")) add("Mídias e arquivos nos PVs", { mode: "dms", onlyAttachments: true });
+    if (sel.includes("friends")) add("PVs com todos os amigos", { mode: "friends", unfriendAfter: $("unfriendAfter").checked });
+    if (sel.includes("dms")) add("PVs e DMs abertas", { mode: "dms", closeAfter: $("closeAfter").checked });
+    startQueue(tasks);
   });
 });
 
 $("dmGo").addEventListener("click", () => {
   const id = val("dmId");
   if (!checkId("dmId")) return;
-  guarded($("dmGo"), "<b>OK?</b>", function singleDm() {
-    run(`PV ${id}`, { mode: "channel", channelId: id });
+  const who = $("dmTName").textContent;
+  guarded($("dmGo"), "Confirmar?", function singleDm() {
+    run(who && !$("dmTarget").classList.contains("bad") ? `PV ${who}` : `PV ${id}`, { mode: "channel", channelId: id });
   });
 });
+
+// prévia de quem é o ID: foto, nome e @ (sozinho ao colar, ou na lupa)
+let lookSeq = 0, lookTimer = 0;
+function fillTargetAvatar(el, t) {
+  el.innerHTML = "";
+  if (t && t.avatar) {
+    const img = document.createElement("img");
+    img.alt = "";
+    img.src = t.avatar;
+    img.onerror = () => (el.textContent = (t.name || "?").replace("#", "")[0].toUpperCase());
+    el.append(img);
+  } else if (t && t.kind === "group") {
+    el.innerHTML = `<svg viewBox="0 0 24 24">${ICONS.users}</svg>`;
+  } else if (t && t.kind === "channel") {
+    el.innerHTML = `<svg viewBox="0 0 24 24">${ICONS.hash}</svg>`;
+  } else {
+    el.textContent = t ? (t.name || "?")[0].toUpperCase() : "?";
+  }
+}
+async function lookupDm() {
+  const id = val("dmId");
+  const box = $("dmTarget");
+  if (!isId(id)) { box.hidden = true; return; }
+  const my = ++lookSeq;
+  box.hidden = false;
+  box.classList.remove("bad");
+  box.classList.add("loading");
+  $("dmTName").textContent = "Procurando…";
+  $("dmTSub").textContent = id;
+  fillTargetAvatar($("dmTAv"), null);
+  try {
+    if (!state.token) throw "Conecte a conta primeiro.";
+    const t = await invoke("lookup_target", { token: state.token, isBot: isBot(), id });
+    if (my !== lookSeq) return;
+    if (!t) throw "Não achei esse ID.";
+    $("dmTName").textContent = t.name;
+    $("dmTSub").textContent = t.sub;
+    fillTargetAvatar($("dmTAv"), t);
+  } catch (e) {
+    if (my !== lookSeq) return;
+    box.classList.add("bad");
+    $("dmTName").textContent = "Não achei esse ID";
+    $("dmTSub").textContent = String(e).slice(0, 120);
+  } finally {
+    if (my === lookSeq) box.classList.remove("loading");
+  }
+}
+$("dmId").addEventListener("input", () => {
+  clearTimeout(lookTimer);
+  if (!isId(val("dmId"))) { lookSeq++; $("dmTarget").hidden = true; return; }
+  lookTimer = setTimeout(lookupDm, 450);
+});
+$("dmId").addEventListener("keydown", (e) => e.key === "Enter" && lookupDm());
+$("dmFind").addEventListener("click", () => (checkId("dmId") ? lookupDm() : null));
 
 // ================= servidores =================
 $("chBtn").addEventListener("click", () => {
@@ -660,13 +790,33 @@ function showUser(u) {
   $("switchBtn").hidden = false;
 }
 
+// menuzinho da conta no perfil do canto de baixo: trocar de conta ou sair
+function closeUserMenu() {
+  $("userMenu").hidden = true;
+  $("meBtn").classList.remove("open");
+}
+$("meBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (!state.user) return go("settings"); // desconectado: vai direto pra conectar
+  const open = $("userMenu").hidden;
+  $("userMenu").hidden = !open;
+  $("meBtn").classList.toggle("open", open);
+});
+document.addEventListener("click", (e) => { if (!e.target.closest(".userWrap")) closeUserMenu(); });
+document.addEventListener("keydown", (e) => e.key === "Escape" && closeUserMenu());
+$("umAccount").addEventListener("click", () => { closeUserMenu(); go("settings"); });
+$("umSwitch").addEventListener("click", () => { closeUserMenu(); switchAccount(); });
+$("umLogout").addEventListener("click", () => { closeUserMenu(); switchAccount(false); });
+
 // ================= trocar de conta =================
 // Volta pra tela de entrada com o campo limpo. A conta anterior fica guardada
 // só na memória, pra dar pra voltar nela se clicou sem querer.
-function switchAccount() {
-  if (state.running) return toast("Pare o processo antes de trocar de conta.");
+// keep = false: "Sair da conta" (sem o atalho de voltar; a conta salva continua na lista)
+function switchAccount(keep = true) {
+  if (state.running) return toast(keep ? "Pare o processo antes de trocar de conta." : "Pare o processo antes de sair.");
   if (idle.on) { idleStop(); log("Modo ausente desligado pra trocar de conta.", "warn"); }
-  if (state.user) state.prev = { user: state.user, token: state.token, type: state.tokenType };
+  state.prev = keep && state.user ? { user: state.user, token: state.token, type: state.tokenType } : null;
+  if (!keep && state.user) log(`Saiu da conta ${state.user.global_name || state.user.username}.`, "warn");
   state.user = null;
   state.token = null;
   $("token").value = "";
@@ -675,6 +825,7 @@ function switchAccount() {
   $("userName").textContent = "Desconectado";
   $("userTag").textContent = "clique pra conectar";
   $("avatar").textContent = "?";
+  $("dmTarget").hidden = true;
   $("helloName").textContent = "visitante";
   $("switchBtn").hidden = true;
   const p = state.prev;
@@ -696,8 +847,8 @@ function backToPrev() {
   showUser(p.user);
   log(`De volta pra ${p.user.global_name || p.user.username}`, "ok");
 }
-$("swapBtn").addEventListener("click", switchAccount);
-$("switchBtn").addEventListener("click", switchAccount);
+$("swapBtn").addEventListener("click", () => switchAccount());
+$("switchBtn").addEventListener("click", () => switchAccount());
 $("gateBack").addEventListener("click", backToPrev);
 
 async function connect(fromButton) {
@@ -747,34 +898,78 @@ $("remember").addEventListener("change", async () => {
 })();
 
 // ================= whitelist =================
+// Duas listas: pessoas/PVs/canais e servidores. Salva sozinho. Os nomes (de quem
+// é cada ID) ficam guardados à parte, só pra mostrar na lista.
+let wlNames = {};
+try { wlNames = JSON.parse(localStorage.getItem("whitelistNomes") || "{}"); } catch {}
+const WL = {
+  u: { list: () => state.whitelist, key: "whitelist", ul: "wlList", input: "wlInput", count: "wlCountU" },
+  g: { list: () => state.wlGuilds, key: "whitelistServidores", ul: "wlgList", input: "wlgInput", count: "wlCountG" },
+};
 function renderWhitelist() {
-  const ul = $("wlList");
-  ul.innerHTML = "";
-  state.whitelist.forEach((id, i) => {
-    const li = document.createElement("li");
-    const rm = document.createElement("button");
-    rm.textContent = "×";
-    rm.onclick = () => { state.whitelist.splice(i, 1); saveWhitelist(); renderWhitelist(); };
-    li.append(document.createTextNode(id), rm);
-    ul.append(li);
-  });
+  for (const k of ["u", "g"]) {
+    const w = WL[k], ul = $(w.ul);
+    ul.innerHTML = "";
+    w.list().forEach((id, i) => {
+      const li = document.createElement("li");
+      const ico = document.createElement("span");
+      ico.className = "wlIco";
+      ico.innerHTML = `<svg viewBox="0 0 24 24">${ICONS[k === "u" ? "shield" : "server"]}</svg>`;
+      const t = document.createElement("span");
+      t.className = "wlText";
+      const b = document.createElement("b");
+      b.textContent = wlNames[id] || (k === "u" ? "ID protegido" : "Servidor protegido");
+      const s = document.createElement("small");
+      s.textContent = id;
+      t.append(b, s);
+      const rm = document.createElement("button");
+      rm.className = "wlRm";
+      rm.title = "Tirar da whitelist";
+      rm.innerHTML = `<svg viewBox="0 0 24 24">${ICONS.trash}</svg>`;
+      rm.onclick = () => { w.list().splice(i, 1); saveWhitelist(); };
+      li.append(ico, t, rm);
+      ul.append(li);
+    });
+    $(w.count).textContent = w.list().length;
+  }
 }
 function saveWhitelist() {
-  try { localStorage.setItem("whitelist", JSON.stringify(state.whitelist)); } catch {}
-}
-function addWhitelist() {
-  const id = val("wlInput");
-  if (!/^\d{15,22}$/.test(id)) return log("ID inválido para a whitelist.", "error");
-  if (!state.whitelist.includes(id)) state.whitelist.push(id);
-  $("wlInput").value = "";
-  saveWhitelist();
+  try {
+    localStorage.setItem("whitelist", JSON.stringify(state.whitelist));
+    localStorage.setItem("whitelistServidores", JSON.stringify(state.wlGuilds));
+    localStorage.setItem("whitelistNomes", JSON.stringify(wlNames));
+  } catch {}
   renderWhitelist();
 }
-$("wlAdd").addEventListener("click", addWhitelist);
-$("wlInput").addEventListener("keydown", (e) => e.key === "Enter" && addWhitelist());
-try { state.whitelist = JSON.parse(localStorage.getItem("whitelist") || "[]"); } catch {}
+function addWhitelist(k) {
+  const w = WL[k], id = val(w.input);
+  if (!isId(id)) return checkId(w.input);
+  if (!w.list().includes(id)) w.list().push(id);
+  $(w.input).value = "";
+  if (!$("useWhitelist").checked) { $("useWhitelist").checked = true; $("useWhitelist").dispatchEvent(new Event("change")); }
+  saveWhitelist();
+  // descobre de quem é (pessoa/PV/canal) pra mostrar o nome
+  if (k === "u" && state.token && !wlNames[id]) {
+    invoke("lookup_target", { token: state.token, isBot: isBot(), id })
+      .then((t) => { if (t && t.name) { wlNames[id] = t.name; saveWhitelist(); } })
+      .catch(() => {});
+  }
+}
+for (const k of ["u", "g"]) {
+  $(k === "u" ? "wlAdd" : "wlgAdd").addEventListener("click", () => addWhitelist(k));
+  $(WL[k].input).addEventListener("keydown", (e) => e.key === "Enter" && addWhitelist(k));
+}
+try {
+  state.whitelist = JSON.parse(localStorage.getItem("whitelist") || "[]");
+  state.wlGuilds = JSON.parse(localStorage.getItem("whitelistServidores") || "[]");
+  $("useWhitelist").checked = localStorage.getItem("usarWhitelist") === "1";
+} catch {}
+$("useWhitelist").addEventListener("change", () => {
+  try { localStorage.setItem("usarWhitelist", $("useWhitelist").checked ? "1" : ""); } catch {}
+});
 renderWhitelist();
-const protectedId = (...ids) => $("useWhitelist").checked && ids.some((id) => id && state.whitelist.includes(id));
+const protectedId = (...ids) =>
+  $("useWhitelist").checked && ids.some((id) => id && (state.whitelist.includes(id) || state.wlGuilds.includes(id)));
 
 // ================= opções =================
 $("useDelay").addEventListener("change", () => $("delayBox").classList.toggle("show", $("useDelay").checked));
@@ -1327,13 +1522,13 @@ document.addEventListener("visibilitychange", () => document.documentElement.cla
   const MSGS = ["acordando…", "apagando a bagunça…", "polindo o vidro…", "escolhendo as cores…", "quase lá…", "pronto!"];
   let pct = 0;
   (function tick() {
-    pct = Math.min(100, pct + 1.5 + Math.random() * 4.5);
+    pct = Math.min(100, pct + 1 + Math.random() * 2.6);   // ~4 s, junto com a borrachinha
     $("spBar").style.width = pct + "%";
     $("spPct").textContent = Math.floor(pct) + "%";
     $("spMsg").textContent = MSGS[Math.min(MSGS.length - 1, Math.floor(pct / 20))];
-    if (pct < 100) return setTimeout(tick, 45 + Math.random() * 70);
-    // só sai depois que o nome voltou escrito (no máximo 1,2 s de espera)
-    Promise.race([eraserDone, new Promise((r) => setTimeout(r, 1200))]).then(() =>
+    if (pct < 100) return setTimeout(tick, 60 + Math.random() * 70);
+    // só sai depois que a borrachinha terminou (no máximo 2 s de espera)
+    Promise.race([eraserDone, new Promise((r) => setTimeout(r, 2000))]).then(() =>
       setTimeout(() => {
         sp.classList.add("out");
         setTimeout(() => sp.remove(), 650);
@@ -1342,7 +1537,7 @@ document.addEventListener("visibilitychange", () => document.documentElement.cla
 })();
 
 // Borrachinha da abertura: entra, esfrega o "tomalerda" da esquerda pra direita soltando
-// farelinhos, sai de lado e o nome volta escrito com brilhinhos. Uns 2 s no total.
+// farelinhos, sai de lado e o nome volta escrito com brilhinhos. Uns 4,5 s no total.
 async function splashEraser(sp) {
   const card = sp.querySelector(".spCard"), logo = sp.querySelector(".spLogo");
   if (!card || !logo) return;
@@ -1374,10 +1569,20 @@ async function splashEraser(sp) {
     })(s);
   });
   let pos = { x: 0, y: 0, r: BASE };
-  const place = (x, y, r) => { pos = { x, y, r }; er.style.transform = `translate(${x - TX}px, ${y - TY}px) rotate(${r}deg)`; };
+  // sx/sy: "amassadinho" quando cai ou pula
+  const place = (x, y, r, sx = 1, sy = 1) => {
+    pos = { x, y, r };
+    er.style.transform = `translate(${x - TX}px, ${y - TY}px) rotate(${r}deg) scale(${sx}, ${sy})`;
+  };
   const moveTo = (x, y, r, ms, arc = 18) => {
     const p = { ...pos };
     return tween(ms, (t) => place(p.x + (x - p.x) * t, p.y + (y - p.y) * t - Math.sin(t * Math.PI) * arc, p.r + (r - p.r) * t), ease);
+  };
+  const sine = (t) => 0.5 - Math.cos(t * Math.PI) / 2;
+  // amassa e volta (quando encosta no chão)
+  const squash = (ms = 260) => {
+    const { x, y, r } = pos;
+    return tween(ms, (t) => { const k = Math.sin(t * Math.PI) * Math.pow(1 - t, 0.6); place(x, y, r, 1 + k * 0.18, 1 - k * 0.2); });
   };
   const crumb = (x, y) => {
     const c = document.createElement("i");
@@ -1410,28 +1615,66 @@ async function splashEraser(sp) {
   const L = logo.offsetLeft + 8, W = logo.offsetWidth - 16, T = logo.offsetTop, H = logo.offsetHeight;
   const top = T + H * 0.42, bot = T + H * 0.74, mid = (top + bot) / 2, amp = (bot - top) / 2;
 
-  await sleep(420);                                   // deixa o cartão terminar de entrar
-  place(L + W + 26, T + H + 6, BASE + 12);
+  // rastro suave de "borracha" que fica atrás e some; e a luzinha que reescreve o nome
+  const smudge = document.createElement("i");
+  smudge.className = "spSmudge";
+  Object.assign(smudge.style, { left: `${L - 6}px`, top: `${mid - amp - 6}px`, height: `${amp * 2 + 12}px`, width: "0px" });
+  const pen = document.createElement("i");
+  pen.className = "spPen";
+  card.append(smudge, pen);
+
+  const restX = L + W + 30, restY = T + H + 4;
+  await sleep(520);                                   // deixa o cartão terminar de entrar
+
+  // 1) cai do alto no começo do nome e amassa ao encostar
+  place(L - 4, mid - 70, BASE - 10);
   er.classList.add("on");
-  await moveTo(L - 4, mid, BASE, 240);
-  await tween(760, (t) => {                           // esfrega rápido, 7 idas e vindas
-    const p = t * (W + 14), wob = Math.sin(t * Math.PI * 14);
-    place(L - 4 + p, mid + wob * amp, BASE + wob * 8);
+  await tween(420, (t) => place(L - 4, mid - 70 + 70 * t * t, BASE - 10 + 10 * t), (t) => t);
+  await squash(240);
+  // 2) "se prepara": duas balançadinhas
+  await tween(300, (t) => place(L - 4, mid, BASE + Math.sin(t * Math.PI * 4) * 7 * (1 - t)));
+
+  // 3) esfrega com calma da esquerda pra direita: vai e volta suave, mais forte no meio
+  smudge.classList.add("on");
+  await tween(1500, (t) => {
+    const p = sine(t) * (W + 14);
+    const force = Math.sin(t * Math.PI) * 0.7 + 0.3;          // começa e termina mais leve
+    const wob = Math.sin(t * Math.PI * 2 * 7.5) * force;
+    place(L - 4 + p, mid + wob * amp, BASE + wob * 9, 1 + Math.abs(wob) * 0.04, 1 - Math.abs(wob) * 0.05);
     logo.style.setProperty("--ec", `${p + 2}px`);
-    if (Math.random() < 0.65) crumb(pos.x, pos.y);
+    smudge.style.width = `${p + 10}px`;
+    if (Math.random() < 0.42) crumb(pos.x, pos.y);
   });
-  await moveTo(L + W + 26, T + H + 6, BASE + 12, 200, 14);
-  er.classList.remove("on");
-  logo.classList.add("write");                        // o nome volta escrito
-  await tween(440, (t) => {
-    const p = t * (W + 50);
-    logo.style.setProperty("--w", `${Math.max(0, p - 22)}px`);
-    if (Math.random() < 0.3) spark(L + p - 20, T + H * (0.3 + Math.random() * 0.45));
-  }, ease);
+  smudge.classList.remove("on");                       // o rastro vai sumindo
+
+  // 4) pula pro lado (girinho) e descansa
+  await tween(480, (t) => {
+    const e = ease(t);
+    place(L + W + 10 + (restX - L - W - 10) * e, mid + (restY - mid) * e - Math.sin(t * Math.PI) * 30, BASE + 360 * e + 12 * e);
+  });
+  place(restX, restY, BASE + 12);
+  await squash(260);
+
+  // 5) o nome volta escrito, com uma luzinha na ponta soltando brilhos
+  logo.classList.add("write");
+  pen.classList.add("on");
+  await tween(950, (t) => {
+    const p = t * (W + 30);
+    logo.style.setProperty("--w", `${Math.max(0, p - 4)}px`);
+    const py = mid + Math.sin(t * Math.PI * 6) * amp * 0.7;   // a luz faz a "letra cursiva"
+    pen.style.transform = `translate(${L + p - 5}px, ${py - 5}px)`;
+    if (Math.random() < 0.22) spark(L + p, py);
+  }, sine);
+  pen.classList.remove("on");
   logo.classList.remove("write");
   logo.style.removeProperty("--ec");
   logo.style.removeProperty("--w");
-  setTimeout(() => er.remove(), 300);
+
+  // 6) pulinho de comemoração e some
+  await tween(420, (t) => place(restX, restY - Math.sin(t * Math.PI) * 16, BASE + 12 + Math.sin(t * Math.PI * 2) * 10));
+  await squash(200);
+  er.classList.remove("on");
+  setTimeout(() => { er.remove(); smudge.remove(); pen.remove(); }, 400);
 }
 
 // caixas extras que só aparecem com a opção ligada

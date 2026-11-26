@@ -67,6 +67,12 @@ pub struct Config {
     /// Fechar PVs: também sair dos grupos.
     #[serde(default)]
     pub leave_groups: bool,
+    /// PV com todos os amigos: desfaz a amizade depois de apagar o PV.
+    #[serde(default)]
+    pub unfriend_after: bool,
+    /// PVs abertos: fecha a conversa (só PV, grupo não) depois de apagar.
+    #[serde(default)]
+    pub close_after: bool,
     /// Pacote de dados: caminho do package.zip ou da pasta extraída.
     #[serde(default)]
     pub package_path: Option<String>,
@@ -84,6 +90,17 @@ pub struct Progress {
     pub total: Option<u64>,
     pub cancelled: bool,
     pub dry_run: bool,
+    /// Várias conversas (todos os PVs / amigos): qual é a atual (1..) e quantas são.
+    pub step: u64,
+    pub steps: u64,
+    /// feitas+puladas quando a conversa atual começou (o `total` é só dela).
+    pub conv_base: u64,
+    /// % do processo inteiro (calculada no emit_progress), pra barra e o tempo restante.
+    pub percent: Option<f64>,
+    /// Total de mensagens do processo inteiro (somando todas as conversas), se já contou.
+    pub grand_total: Option<u64>,
+    /// Ainda contando as mensagens antes de começar a apagar.
+    pub counting: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -102,6 +119,15 @@ pub struct User {
     pub avatar: Option<String>,
     #[serde(default)]
     pub bot: Option<bool>,
+}
+
+/// Prévia de um ID: pessoa, PV, grupo ou canal.
+#[derive(Debug, Clone, Serialize)]
+pub struct Target {
+    pub kind: &'static str,
+    pub name: String,
+    pub sub: String,
+    pub avatar: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -376,6 +402,64 @@ impl Client {
         self.get_json(&format!("{API}/users/@me"), &never).await
     }
 
+    /// Mostra de quem é um ID (pessoa, PV, grupo ou canal) antes de apagar.
+    pub async fn lookup(&self, id: &str) -> Result<Target, String> {
+        if !is_snowflake(id) {
+            return Err("ID inválido.".into());
+        }
+        let never = AtomicBool::new(false);
+        let avatar = |u: &User| {
+            u.avatar.as_ref().map(|a| format!("https://cdn.discordapp.com/avatars/{}/{a}.png?size=128", u.id))
+        };
+        let (status, body) = self.send(Method::GET, &format!("{API}/channels/{id}"), &never).await?;
+        if status.is_success() {
+            let v: Value = serde_json::from_str(&body).map_err(|e| e.to_string())?;
+            let kind = v.get("type").and_then(|t| t.as_u64()).unwrap_or(0);
+            let users: Vec<User> = v
+                .get("recipients")
+                .and_then(|r| serde_json::from_value(r.clone()).ok())
+                .unwrap_or_default();
+            let name = v.get("name").and_then(|n| n.as_str()).filter(|n| !n.is_empty()).map(str::to_string);
+            return Ok(match kind {
+                1 => {
+                    let u = users.first().ok_or("PV sem ninguém?")?;
+                    Target {
+                        kind: "dm",
+                        name: u.global_name.clone().unwrap_or_else(|| u.username.clone()),
+                        sub: format!("PV com {}", u.username),
+                        avatar: avatar(u),
+                    }
+                }
+                3 => Target {
+                    kind: "group",
+                    name: name.unwrap_or_else(|| users.iter().map(|u| u.username.as_str()).collect::<Vec<_>>().join(", ")),
+                    sub: format!("Grupo com {} pessoas", users.len() + 1),
+                    avatar: v
+                        .get("icon")
+                        .and_then(|i| i.as_str())
+                        .map(|i| format!("https://cdn.discordapp.com/channel-icons/{id}/{i}.png?size=128")),
+                },
+                _ => Target {
+                    kind: "channel",
+                    name: format!("#{}", name.unwrap_or_else(|| id.to_string())),
+                    sub: "Canal de servidor".into(),
+                    avatar: None,
+                },
+            });
+        }
+        let (status, body) = self.send(Method::GET, &format!("{API}/users/{id}"), &never).await?;
+        if status.is_success() {
+            let u: User = serde_json::from_str(&body).map_err(|e| e.to_string())?;
+            return Ok(Target {
+                kind: "user",
+                name: u.global_name.clone().unwrap_or_else(|| u.username.clone()),
+                sub: u.username.clone(),
+                avatar: avatar(&u),
+            });
+        }
+        Err("Não achei ninguém nem conversa com esse ID.".into())
+    }
+
     async fn delete(&self, channel_id: &str, id: &str, cancel: &AtomicBool) -> Result<DeleteOutcome, String> {
         let url = format!("{API}/channels/{channel_id}/messages/{id}");
         let (status, body) = self.send(Method::DELETE, &url, cancel).await?;
@@ -399,6 +483,8 @@ struct Job {
     cancel: Arc<AtomicBool>,
     author_id: String,
     progress: Progress,
+    /// Contagem feita antes (canal → nº de mensagens suas), pra não buscar de novo.
+    pre: HashMap<String, u64>,
 }
 
 pub async fn run(app: AppHandle, mut cfg: Config, cancel: Arc<AtomicBool>) -> Result<Progress, String> {
@@ -426,6 +512,7 @@ pub async fn run(app: AppHandle, mut cfg: Config, cancel: Arc<AtomicBool>) -> Re
         cfg,
         cancel,
         author_id,
+        pre: HashMap::new(),
     };
 
     let result = match job.cfg.mode {
@@ -453,7 +540,105 @@ pub async fn run(app: AppHandle, mut cfg: Config, cancel: Arc<AtomicBool>) -> Re
 
 impl Job {
     fn emit_progress(&self) {
-        let _ = self.app.emit("deletion-progress", &self.progress);
+        let mut p = self.progress.clone();
+        let done = p.deleted + p.skipped;
+        // quanto da conversa/lista atual já foi (0..1), se o total é conhecido
+        let frac = p.total.filter(|t| *t > 0).map(|t| (done.saturating_sub(p.conv_base) as f64 / t as f64).min(1.0));
+        p.percent = if p.counting {
+            Some(0.0)
+        } else if let Some(g) = p.grand_total.filter(|g| *g > 0) {
+            Some((done as f64 / g as f64 * 100.0).min(100.0))
+        } else if p.steps > 0 {
+            Some(((p.step.saturating_sub(1)) as f64 + frac.unwrap_or(0.0)) / p.steps as f64 * 100.0)
+        } else {
+            frac.map(|f| f * 100.0)
+        };
+        let _ = self.app.emit("deletion-progress", &p);
+    }
+
+    /// Quantas mensagens suas (com a palavra, nas datas escolhidas) tem nessa conversa,
+    /// pela busca do Discord. None = não deu pra contar (bot, erro...).
+    async fn count_mine(&self, channel_id: &str) -> Option<u64> {
+        if self.cfg.is_bot {
+            return None;
+        }
+        let guild = self.channel_guild(channel_id).await;
+        self.count_in(channel_id, guild).await
+    }
+
+    async fn count_in(&self, channel_id: &str, guild: Option<String>) -> Option<u64> {
+        let base = match &guild {
+            Some(g) => format!("{API}/guilds/{g}/messages/search"),
+            None => format!("{API}/channels/{channel_id}/messages/search"),
+        };
+        let mut url = Url::parse(&base).ok()?;
+        {
+            let mut q = url.query_pairs_mut();
+            q.append_pair("author_id", &self.author_id);
+            if guild.is_some() {
+                q.append_pair("channel_id", channel_id);
+                q.append_pair("include_nsfw", "true");
+            }
+            if let Some(c) = non_empty(&self.cfg.content) {
+                q.append_pair("content", &c);
+            }
+            if let Some(m) = self.cfg.after_ms.map(ms_to_snowflake) {
+                q.append_pair("min_id", &m.to_string());
+            }
+            if let Some(m) = self.cfg.before_ms.map(ms_to_snowflake) {
+                q.append_pair("max_id", &m.to_string());
+            }
+        }
+        self.search(url.as_str()).await.ok().map(|r| r.total_results)
+    }
+
+    /// Várias conversas (PVs): conta antes as mensagens de todas, pra ter o total
+    /// certo, a % e o tempo restante desde o começo. Devolve só as que têm algo
+    /// pra apagar (ou que não deu pra contar).
+    async fn precount(&mut self, chans: Vec<(String, String)>) -> Result<Vec<(String, String)>, String> {
+        if self.cfg.is_bot || chans.is_empty() {
+            return Ok(chans);
+        }
+        emit_log(&self.app, "info", format!("Contando suas mensagens em {} conversas…", chans.len()));
+        self.progress.counting = true;
+        self.progress.steps = chans.len() as u64;
+        let mut sum = 0u64;
+        let mut keep = Vec::new();
+        for (i, (id, label)) in chans.into_iter().enumerate() {
+            if self.cancel.load(Ordering::Relaxed) {
+                return Err(CANCELLED.into());
+            }
+            self.progress.step = i as u64 + 1;
+            self.progress.grand_total = Some(sum);
+            self.emit_progress();
+            match self.count_in(&id, None).await {
+                Some(0) => {}
+                Some(n) => {
+                    sum += n;
+                    self.pre.insert(id.clone(), n);
+                    keep.push((id, label));
+                }
+                None => keep.push((id, label)),
+            }
+        }
+        self.progress.counting = false;
+        self.progress.grand_total = Some(sum);
+        self.progress.step = 0;
+        self.progress.steps = keep.len() as u64;
+        emit_log(
+            &self.app,
+            "ok",
+            format!("{sum} mensagens suas pra apagar em {} conversa{}.", keep.len(), if keep.len() == 1 { "" } else { "s" }),
+        );
+        self.emit_progress();
+        Ok(keep)
+    }
+
+    /// Começo de uma conversa: zera a parte "dessa conversa" do progresso.
+    fn start_conv(&mut self, total: Option<u64>) {
+        self.progress.conv_base = self.progress.deleted + self.progress.skipped;
+        self.progress.total = total;
+        self.emit_progress();
     }
 
     fn whitelisted(&self, id: &str) -> bool {
@@ -513,7 +698,37 @@ impl Job {
             emit_log(&self.app, "warn", "Essa conversa está na whitelist — nada a fazer.");
             return Ok(());
         }
+        if self.wants_keyword_search() {
+            return self.keyword_search_in(&channel_id).await;
+        }
         self.clean_channel(&channel_id).await
+    }
+
+    /// Com palavra-chave (e token de usuário) dá pra usar a busca do Discord, que já
+    /// devolve só as mensagens com a palavra. Ler o histórico inteiro de 100 em 100
+    /// numa conversa grande demora tanto que parece que não está funcionando.
+    fn wants_keyword_search(&self) -> bool {
+        !self.cfg.is_bot && non_empty(&self.cfg.content).is_some()
+    }
+
+    /// Busca a palavra só nessa conversa: PV/grupo pela busca do canal, canal de
+    /// servidor pela busca do servidor filtrando o canal.
+    async fn keyword_search_in(&mut self, channel_id: &str) -> Result<(), String> {
+        let guild = self.channel_guild(channel_id).await;
+        self.cfg.channel_id = Some(channel_id.to_string());
+        self.cfg.guild_id = guild;
+        self.start_conv(None); // a busca preenche o total dessa conversa
+        self.run_search().await
+    }
+
+    /// ID do servidor do canal (None = PV ou grupo).
+    async fn channel_guild(&self, channel_id: &str) -> Option<String> {
+        let (status, body) = self.client.send(Method::GET, &format!("{API}/channels/{channel_id}"), &self.cancel).await.ok()?;
+        if !status.is_success() {
+            return None;
+        }
+        let v: Value = serde_json::from_str(&body).ok()?;
+        v.get("guild_id").and_then(|g| g.as_str()).map(|g| g.to_string())
     }
 
     /// Aceita ID de canal ou de pessoa: se o canal não existe e o ID é de um
@@ -552,6 +767,8 @@ impl Job {
             .get_json(&format!("{API}/users/@me/channels"), &self.cancel)
             .await?;
         emit_log(&self.app, "info", format!("{} DMs/grupos abertos.", dms.len()));
+        let mut chans = Vec::new();
+        let mut single: HashSet<String> = HashSet::new(); // PVs 1:1 (grupo não fecha)
         for dm in dms {
             let protected = self.whitelisted(&dm.id) || dm.recipients.iter().any(|u| self.whitelisted(&u.id));
             let label = dm.name.clone().unwrap_or_else(|| {
@@ -561,10 +778,44 @@ impl Job {
                 emit_log(&self.app, "warn", format!("Whitelist, pulando: {label}"));
                 continue;
             }
+            if dm.kind == 1 {
+                single.insert(dm.id.clone());
+            }
+            chans.push((dm.id, label));
+        }
+        // "fechar depois": fecha também os PVs em que não tinha nada pra apagar
+        let all: Vec<(String, String)> = chans.clone();
+        let chans = self.precount(chans).await?;
+        self.progress.steps = chans.len() as u64;
+        for (i, (id, label)) in chans.into_iter().enumerate() {
+            self.progress.step = i as u64 + 1;
             emit_log(&self.app, "info", format!("→ DM com {label}"));
-            self.clean_channel(&dm.id).await?;
+            if self.wants_keyword_search() {
+                self.keyword_search_in(&id).await?;
+            } else {
+                self.clean_channel(&id).await?;
+            }
+        }
+        if self.cfg.close_after {
+            for (id, label) in all.iter().filter(|(id, _)| single.contains(id)) {
+                self.side_action(Method::DELETE, &format!("{API}/channels/{id}"), &format!("PV fechado: {label}")).await?;
+            }
         }
         Ok(())
+    }
+
+    /// Ação extra que não conta como mensagem apagada (fechar PV, desfazer amizade).
+    async fn side_action(&self, method: Method, url: &str, done: &str) -> Result<(), String> {
+        if self.cancel.load(Ordering::Relaxed) {
+            return Err(CANCELLED.into());
+        }
+        let (status, body) = self.client.send(method, url, &self.cancel).await?;
+        if status.is_success() {
+            emit_log(&self.app, "ok", done);
+        } else {
+            emit_log(&self.app, "warn", format!("{done} — não deu ({})", discord_error(&body)));
+        }
+        sleep_cancellable(Duration::from_millis(self.cfg.delay_ms.max(300)), &self.cancel).await
     }
 
     /// Abre a DM com cada amigo e limpa.
@@ -576,24 +827,66 @@ impl Job {
             .await?;
         let friends: Vec<User> = rels.into_iter().filter(|r| r.kind == 1).map(|r| r.user).collect();
         emit_log(&self.app, "info", format!("{} amigos encontrados.", friends.len()));
+        // abre (ou reaproveita) o PV com cada amigo
+        let mut chans = Vec::new();
+        let mut friend_of: HashMap<String, String> = HashMap::new(); // PV → id do amigo
         for f in friends {
             if self.whitelisted(&f.id) {
                 emit_log(&self.app, "warn", format!("Whitelist, pulando: {}", f.username));
                 continue;
             }
-            emit_log(&self.app, "info", format!("→ DM com {}", f.username));
             let channel_id = self.client.open_dm(&f.id, &self.cancel).await?;
             if self.whitelisted(&channel_id) {
                 continue;
             }
-            self.clean_channel(&channel_id).await?;
-            sleep_cancellable(Duration::from_millis(500), &self.cancel).await?;
+            friend_of.insert(channel_id.clone(), f.id.clone());
+            chans.push((channel_id, f.username));
+            sleep_cancellable(Duration::from_millis(250), &self.cancel).await?;
+        }
+        let all: Vec<(String, String)> = chans.clone();
+        let chans = self.precount(chans).await?;
+        self.progress.steps = chans.len() as u64;
+        for (i, (id, label)) in chans.into_iter().enumerate() {
+            self.progress.step = i as u64 + 1;
+            emit_log(&self.app, "info", format!("→ DM com {label}"));
+            if self.wants_keyword_search() {
+                self.keyword_search_in(&id).await?;
+            } else {
+                self.clean_channel(&id).await?;
+            }
+        }
+        // "remover amizade": depois de apagar todos os PVs, desfaz cada amizade
+        if self.cfg.unfriend_after {
+            for (id, label) in &all {
+                if let Some(uid) = friend_of.get(id) {
+                    self.side_action(
+                        Method::DELETE,
+                        &format!("{API}/users/@me/relationships/{uid}"),
+                        &format!("Amizade desfeita: {label}"),
+                    )
+                    .await?;
+                }
+            }
         }
         Ok(())
     }
 
     /// Percorre o histórico do canal, 100 mensagens por vez, do mais novo pro mais antigo.
     async fn clean_channel(&mut self, channel_id: &str) -> Result<(), String> {
+        // conta antes pra ter % e tempo restante
+        let pre = self.pre.get(channel_id).copied();
+        let count = if pre.is_some() { pre } else { self.count_mine(channel_id).await };
+        self.start_conv(count);
+        if self.progress.steps == 0 {
+            self.progress.grand_total = count; // uma conversa só: o total dela é o total
+        }
+        if let Some(n) = count {
+            emit_log(&self.app, "info", format!("{n} mensage{} sua{} aqui.", if n == 1 { "m" } else { "ns" }, if n == 1 { "" } else { "s" }));
+            // várias conversas: se não tem nada seu nessa, nem lê o histórico
+            if n == 0 && self.progress.steps > 0 {
+                return Ok(());
+            }
+        }
         let after = self.cfg.after_ms.map(ms_to_snowflake);
         let mut before = self.cfg.before_ms.map(ms_to_snowflake);
 
@@ -672,6 +965,9 @@ impl Job {
             let res = self.search(url.as_str()).await?;
             if self.progress.total.is_none() {
                 self.progress.total = Some(res.total_results);
+                if self.progress.steps == 0 {
+                    self.progress.grand_total = Some(res.total_results);
+                }
                 emit_log(&self.app, "info", format!("A busca encontrou ~{} mensagens.", res.total_results));
             }
 
