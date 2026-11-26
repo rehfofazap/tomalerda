@@ -485,7 +485,8 @@ async function lookupDm() {
     if (my !== lookSeq) return;
     box.classList.add("bad");
     $("dmTName").textContent = "Não achei esse ID";
-    $("dmTSub").textContent = String(e).slice(0, 120);
+    $("dmTSub").textContent = String(e).slice(0, 220);
+    $("dmTSub").title = String(e);
   } finally {
     if (my === lookSeq) box.classList.remove("loading");
   }

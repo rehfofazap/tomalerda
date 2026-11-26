@@ -447,17 +447,48 @@ impl Client {
                 },
             });
         }
+        let ch_status = status.as_u16();
+        let person = |u: &User| Target {
+            kind: "user",
+            name: u.global_name.clone().unwrap_or_else(|| u.username.clone()),
+            sub: u.username.clone(),
+            avatar: avatar(u),
+        };
+        // 1) perfil direto (com conta de usuário o Discord às vezes recusa)
         let (status, body) = self.send(Method::GET, &format!("{API}/users/{id}"), &never).await?;
         if status.is_success() {
-            let u: User = serde_json::from_str(&body).map_err(|e| e.to_string())?;
-            return Ok(Target {
-                kind: "user",
-                name: u.global_name.clone().unwrap_or_else(|| u.username.clone()),
-                sub: u.username.clone(),
-                avatar: avatar(&u),
-            });
+            if let Ok(u) = serde_json::from_str::<User>(&body) {
+                return Ok(person(&u));
+            }
         }
-        Err("Não achei ninguém nem conversa com esse ID.".into())
+        let u_status = status.as_u16();
+        // 2) perfil do jeito que o app do Discord pede
+        let (status, body) = self.send(Method::GET, &format!("{API}/users/{id}/profile"), &never).await?;
+        if status.is_success() {
+            if let Some(u) = serde_json::from_str::<Value>(&body)
+                .ok()
+                .and_then(|v| v.get("user").cloned())
+                .and_then(|u| serde_json::from_value::<User>(u).ok())
+            {
+                return Ok(person(&u));
+            }
+        }
+        let p_status = status.as_u16();
+        // 3) está na sua lista de amigos (ou pedidos/bloqueados)?
+        if let Ok(rels) = self.get_json::<Vec<Relationship>>(&format!("{API}/users/@me/relationships"), &never).await {
+            if let Some(r) = rels.iter().find(|r| r.user.id == id) {
+                return Ok(person(&r.user));
+            }
+        }
+        // 4) tem PV aberto com ela?
+        if let Ok(dms) = self.get_json::<Vec<DmChannel>>(&format!("{API}/users/@me/channels"), &never).await {
+            if let Some(u) = dms.iter().flat_map(|d| d.recipients.iter()).find(|u| u.id == id) {
+                return Ok(person(u));
+            }
+        }
+        Err(format!(
+            "Não achei ninguém nem conversa com esse ID (canal {ch_status}, pessoa {u_status}/{p_status}). Dá pra apagar mesmo assim."
+        ))
     }
 
     async fn delete(&self, channel_id: &str, id: &str, cancel: &AtomicBool) -> Result<DeleteOutcome, String> {
