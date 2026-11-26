@@ -38,29 +38,60 @@
   --bg: #15171c; --b1: rgba(190, 200, 220, .16); --b2: rgba(150, 160, 180, .12); --b3: rgba(120, 130, 150, .14);
 }
 /* personagens: só paleta + desenho de fundo */
+/* Hello Kitty: rosa-chiclete, branco, laço vermelho e nariz amarelo */
 [data-theme="kitty"] {
-  --a: #ff5c9d; --a2: #ffd1e3; --on-a: #fff;
-  --grad: linear-gradient(120deg, #ff3f86, #ff9ec4);
-  --logo: linear-gradient(100deg, #ffffff, #ffd1e3 35%, #ff5c9d 75%, #ff2d6f);
-  --bg: #3a1026; --b1: rgba(255, 120, 175, .6); --b2: rgba(255, 255, 255, .22); --b3: rgba(255, 45, 111, .45);
+  --a: #ff4f8b; --a2: #ffe3ee; --on-a: #fff;
+  --grad: linear-gradient(120deg, #ff2e63, #ff5c9d 45%, #ffa8cb);
+  --logo: linear-gradient(100deg, #ffffff, #ffe3ee 30%, #ff5c9d 65%, #ff2e63);
+  --bg: #4a1630; --b1: rgba(255, 130, 185, .62); --b2: rgba(255, 255, 255, .26); --b3: rgba(255, 46, 99, .45);
 }
+[data-theme="kitty"] body::before {
+  background:
+    radial-gradient(900px 520px at 0% 0%, rgba(255, 255, 255, .16), transparent 65%),
+    radial-gradient(800px 500px at 100% 100%, rgba(255, 46, 99, .35), transparent 70%),
+    radial-gradient(600px 400px at 85% 10%, rgba(255, 225, 77, .1), transparent 70%),
+    linear-gradient(160deg, #5a1a3a 0%, #4a1630 55%, #3b1026 100%);
+}
+/* Homem-Aranha: vermelho do uniforme, azul, cidade à noite */
 [data-theme="aranha"] {
-  --a: #e8253a; --a2: #7fa6ff; --on-a: #fff;
-  --grad: linear-gradient(120deg, #d81f33, #8a1d4a 50%, #2a5bd7);
-  --logo: linear-gradient(100deg, #ff6b7a, #e8253a 40%, #3b6cff 85%);
-  --bg: #070b1c; --b1: rgba(232, 37, 58, .5); --b2: rgba(42, 91, 215, .5); --b3: rgba(120, 20, 40, .4);
+  --a: #e8253a; --a2: #8fb2ff; --on-a: #fff;
+  --grad: linear-gradient(120deg, #c8162b, #e8253a 45%, #2a5bd7);
+  --logo: linear-gradient(100deg, #ffffff, #ff6b7a 30%, #e8253a 55%, #3b6cff 90%);
+  --bg: #060a1a; --b1: rgba(232, 37, 58, .5); --b2: rgba(42, 91, 215, .5); --b3: rgba(120, 20, 40, .4);
 }
+[data-theme="aranha"] body::before {
+  background:
+    radial-gradient(1000px 420px at 100% 0%, rgba(232, 37, 58, .32), transparent 65%),
+    radial-gradient(1200px 320px at 30% 118%, rgba(60, 110, 255, .35), transparent 70%),
+    linear-gradient(180deg, #050816 0%, #08102a 60%, #0d1640 100%);
+}
+/* Zero Two: vermelho do uniforme, cabelo rosa, chifres e o verde-água do olho */
 [data-theme="zerotwo"] {
-  --a: #ff2d55; --a2: #ff9fb8; --on-a: #fff;
-  --grad: linear-gradient(120deg, #e0103f, #ff6f96);
-  --logo: linear-gradient(100deg, #ffc4d4, #ff6f96 40%, #e0103f 80%);
-  --bg: #1a050c; --b1: rgba(255, 45, 85, .5); --b2: rgba(255, 159, 184, .32); --b3: rgba(40, 200, 170, .16);
+  --a: #ff3d6e; --a2: #ffb8cb; --on-a: #fff;
+  --grad: linear-gradient(120deg, #d80f3c, #ff4f7a 50%, #ff9fbb);
+  --logo: linear-gradient(100deg, #ffe0ea, #ff9fbb 35%, #ff4f7a 65%, #d80f3c);
+  --bg: #1c0610; --b1: rgba(255, 61, 110, .5); --b2: rgba(255, 179, 201, .34); --b3: rgba(40, 200, 170, .2);
 }
+[data-theme="zerotwo"] body::before {
+  background:
+    radial-gradient(900px 600px at 100% 0%, rgba(255, 159, 187, .26), transparent 65%),
+    radial-gradient(700px 480px at 0% 100%, rgba(216, 15, 60, .34), transparent 70%),
+    radial-gradient(500px 300px at 15% 15%, rgba(40, 200, 170, .1), transparent 70%),
+    linear-gradient(160deg, #24081a 0%, #1c0610 100%);
+}
+/* Naruto: laranja da roupa, preto, azul da bandana e o amarelo do cabelo */
 [data-theme="naruto"] {
-  --a: #ff8a1f; --a2: #ffd08a; --on-a: #1b0e02;
-  --grad: linear-gradient(120deg, #ff6a00, #ffb347);
-  --logo: linear-gradient(100deg, #ffe0a8, #ffb347 40%, #ff6a00 80%);
-  --bg: #120a04; --b1: rgba(255, 138, 31, .5); --b2: rgba(255, 190, 90, .28); --b3: rgba(40, 90, 200, .22);
+  --a: #ff7a12; --a2: #ffd34d; --on-a: #1b0e02;
+  --grad: linear-gradient(120deg, #ff5e00, #ff8a1f 45%, #ffc93a);
+  --logo: linear-gradient(100deg, #fff1b0, #ffd34d 30%, #ff8a1f 60%, #ff5e00);
+  --bg: #140b04; --b1: rgba(255, 122, 18, .52); --b2: rgba(255, 211, 77, .26); --b3: rgba(40, 100, 220, .34);
+}
+[data-theme="naruto"] body::before {
+  background:
+    radial-gradient(1000px 520px at 0% 0%, rgba(255, 122, 18, .34), transparent 65%),
+    radial-gradient(900px 420px at 100% 100%, rgba(40, 100, 220, .32), transparent 70%),
+    radial-gradient(600px 300px at 80% 10%, rgba(255, 211, 77, .12), transparent 70%),
+    linear-gradient(170deg, #1c0f05 0%, #140b04 60%, #0c0a16 100%);
 }
 
 [data-theme="menta"] {
@@ -113,6 +144,14 @@
   --logo: linear-gradient(100deg, #ffe3e4, #ff8a90 45%, #ff3b45 90%);
   --bg: #080505; --b1: rgba(200, 14, 28, .5); --b2: rgba(120, 5, 12, .45); --b3: rgba(255, 255, 255, .05);
 }
+/* sala de plástico: luz fria em cima, sangue escorrendo no canto */
+[data-theme="dexter"] body::before {
+  background:
+    radial-gradient(1100px 300px at 50% -10%, rgba(220, 230, 240, .1), transparent 70%),
+    radial-gradient(800px 520px at 100% 100%, rgba(170, 8, 20, .42), transparent 65%),
+    radial-gradient(500px 380px at 0% 70%, rgba(120, 5, 12, .3), transparent 70%),
+    linear-gradient(180deg, #0b0909 0%, #080505 100%);
+}
 /* Hora de Aventura: amarelo-alaranjado do cachorro, azul do céu, verde da grama e rosa doce */
 [data-theme="aventura"] {
   --a: #ffb21e; --a2: #9fe3ff; --on-a: #2a1800;
@@ -125,19 +164,22 @@
     radial-gradient(1200px 300px at 50% 115%, rgba(92, 190, 70, .5), transparent 70%),
     linear-gradient(180deg, #0b3352 0%, #0c3b5c 60%, #123f35 100%);
 }
-/* Tokyo Ghoul: preto, branco e vermelho-sangue */
+/* Tokyo Ghoul: puxado pro branco (cabelo do Kaneki, lírios), preto e só um toque de vermelho */
 [data-theme="tokyoghoul"] {
-  --a: #e3192b; --a2: #f4f4f4; --on-a: #fff;
-  --grad: linear-gradient(120deg, #8c0612, #e3192b 55%, #ff4a55);
-  --logo: linear-gradient(100deg, #ffffff, #f4f4f4 35%, #ff4a55 70%, #c40d1c);
-  --bg: #070606; --b1: rgba(227, 25, 43, .42); --b2: rgba(255, 255, 255, .08); --b3: rgba(120, 4, 14, .5);
+  --a: #f2f2f4; --a2: #ffffff; --on-a: #0b0b0d;
+  --grad: linear-gradient(120deg, #ffffff, #e4e4e8 60%, #ff8a92);
+  --logo: linear-gradient(100deg, #ffffff, #f0f0f2 55%, #ff6a74 85%, #e3192b);
+  --bg: #121214; --b1: rgba(255, 255, 255, .22); --b2: rgba(255, 255, 255, .12); --b3: rgba(227, 25, 43, .22);
 }
 [data-theme="tokyoghoul"] body::before {
   background:
-    radial-gradient(900px 600px at 100% 0%, rgba(160, 8, 22, .35), transparent 65%),
-    radial-gradient(700px 500px at 0% 100%, rgba(255, 255, 255, .05), transparent 70%),
-    #070606;
+    radial-gradient(1000px 640px at 0% 0%, rgba(255, 255, 255, .16), transparent 65%),
+    radial-gradient(800px 520px at 100% 100%, rgba(255, 255, 255, .08), transparent 70%),
+    radial-gradient(520px 360px at 100% 0%, rgba(200, 14, 30, .2), transparent 70%),
+    linear-gradient(160deg, #1d1d20 0%, #121214 60%, #0b0b0c 100%);
 }
+/* o vermelho fica nos detalhes: item aberto e pontinho de foco */
+[data-theme="tokyoghoul"] .navItem.active svg { color: #ff4a55; }
 
 /* ---------- estilos dos painéis ---------- */
 /* --p-*  painéis grandes (menu e área principal)
@@ -288,6 +330,13 @@ svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width:
 .titlebar {
   position: fixed; top: 0; left: 0; right: 0; height: var(--tb); z-index: 50;
   display: flex; align-items: center; padding: 0 16px; user-select: none;
+  border-radius: var(--win-r, 14px) var(--win-r, 14px) 0 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, 0));
+}
+/* linha de luz bem fina embaixo da barra, na cor do tema */
+.titlebar::after {
+  content: ""; position: absolute; left: 18%; right: 18%; bottom: 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--a) 45%, transparent), transparent);
 }
 /* bolinhas: vermelho fecha, azul minimiza, verde manda pro segundo plano */
 .lights { display: flex; gap: 8px; position: relative; z-index: 1; margin-left: auto; }
@@ -310,8 +359,15 @@ svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width:
   position: absolute; left: 0; right: 0; top: 0; bottom: 0;
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-.tbIcon { width: 18px; height: 18px; border-radius: 5px; pointer-events: none; }
-.tbName { font-size: 12.5px; font-weight: 600; color: var(--muted); letter-spacing: .2px; pointer-events: none; }
+.tbIcon { width: 20px; height: 20px; border-radius: 6px; pointer-events: none; box-shadow: 0 0 0 1px rgba(255, 255, 255, .12), 0 3px 10px -3px var(--glow); }
+.tbName {
+  font-family: "Pacifico", cursive; font-size: 15px; line-height: 1; padding: 2px 2px 4px; pointer-events: none;
+  background: var(--logo); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+/* página aberta, depois do nome: "tomalerda · Privados" */
+.tbPage { font-size: 12px; font-weight: 600; color: var(--dim); pointer-events: none; }
+.tbPage:empty { display: none; }
+.tbPage::before { content: "·"; margin-right: 8px; color: var(--line-2); }
 
 /* aviso rápido */
 .toast {
@@ -367,21 +423,57 @@ input.bad { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(255,
 .brandPic { display: none; width: 38px; height: 38px; border-radius: 12px; object-fit: cover; box-shadow: 0 6px 16px -6px var(--glow); }
 
 /* ---- menu recolhido: só os ícones ---- */
-.sidebar.mini { width: 66px; padding: 16px 8px 10px; }
+.sidebar.mini { width: 72px; padding: 16px 10px 12px; }
 .sidebar.mini .sideToggle { transform: rotate(180deg); }
-.sidebar.mini .brand { margin: 0 0 6px; padding-bottom: 10px; }
-.sidebar.mini .logo, .sidebar.mini .by { display: none; }
-.sidebar.mini .brandPic { display: block; }
-.sidebar.mini .navTitle { font-size: 0; height: 1px; flex-shrink: 0; margin: 6px 10px; background: var(--line); }
-.sidebar.mini .navItem { position: relative; justify-content: center; padding: 7px 0; font-size: 0; gap: 0; }
-.sidebar.mini .navItem svg { width: 19px; height: 19px; }
-.sidebar.mini .live { position: absolute; top: 6px; right: 8px; margin: 0; }
+.sidebar.mini .brand { margin: 0 0 8px; padding-bottom: 12px; border-bottom: 0; position: relative; }
+.sidebar.mini .brand::after {
+  content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line-2), transparent);
+}
+.sidebar.mini .logo, .sidebar.mini .by, .sidebar.mini .ver { display: none; }
+.sidebar.mini .brandPic {
+  display: block; width: 44px; height: 44px; border-radius: 14px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--a) 55%, transparent), 0 8px 20px -8px var(--glow);
+}
+/* separadores: tracinho curto no meio, no lugar do título do grupo */
+.sidebar.mini .navTitle { font-size: 0; height: 1px; width: 28px; flex-shrink: 0; margin: 6px auto; background: linear-gradient(90deg, transparent, var(--line-2), transparent); }
+/* cada item vira um quadradinho centralizado */
+.sidebar.mini nav { align-items: center; gap: 2px; }
+.sidebar.mini .navItem {
+  position: relative; justify-content: center; width: 42px; height: 36px; padding: 0; font-size: 0; gap: 0; border-radius: 12px;
+}
+.sidebar.mini .navItem svg { width: 19px; height: 19px; transition: transform .2s; }
+.sidebar.mini .navItem:hover svg { transform: scale(1.1); }
+.sidebar.mini .navItem.active {
+  color: var(--on-a); background: var(--grad); box-shadow: 0 8px 20px -8px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .25);
+}
+.sidebar.mini .navItem.active svg { color: var(--on-a); }
+/* risquinho de luz na borda esquerda do item aberto */
+.sidebar.mini .navItem.active::before {
+  content: ""; position: absolute; left: -10px; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--a2); box-shadow: 0 0 10px var(--glow);
+}
+.sidebar.mini .live { position: absolute; top: 5px; right: 6px; margin: 0; box-shadow: 0 0 0 2px var(--bg); }
 .sidebar.mini .updCard { justify-content: center; padding: 8px 0; }
 .sidebar.mini .updTxt { display: none; }
-.sidebar.mini .meRow { flex-direction: column; }
-.sidebar.mini .me { justify-content: center; padding: 6px 0; }
+.sidebar.mini .meRow { flex-direction: column; align-items: center; gap: 8px; }
+.sidebar.mini .me { justify-content: center; padding: 0; width: 46px; height: 46px; border-radius: 50%; background: none; border: 0; }
+.sidebar.mini .me .avatar { width: 42px; height: 42px; box-shadow: 0 0 0 2px var(--a), 0 6px 16px -6px var(--glow); }
 .sidebar.mini .meText { display: none; }
-.sidebar.mini .swapBtn { width: auto; height: 34px; }
+.sidebar.mini .swapBtn { width: 44px; height: 36px; border-radius: 12px; }
+/* nome do item ao passar o mouse com o menu recolhido (criado no main.js) */
+.navTip {
+  position: fixed; z-index: 60; pointer-events: none; padding: 6px 11px; border-radius: 9px;
+  font-size: 12.5px; font-weight: 600; color: var(--text); white-space: nowrap;
+  background: color-mix(in srgb, var(--bg) 55%, #18181e); border: 1px solid var(--line-2);
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, .8);
+  opacity: 0; transform: translate(-4px, -50%); transition: opacity .15s, transform .15s;
+}
+.navTip.show { opacity: 1; transform: translate(0, -50%); }
+.navTip::before {
+  content: ""; position: absolute; left: -5px; top: 50%; width: 8px; height: 8px; margin-top: -4px; transform: rotate(45deg);
+  background: inherit; border-left: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2);
+}
 .brand { display: flex; flex-direction: column; align-items: center; padding: 0 0 12px; margin: 0 8px 6px; border-bottom: 1px solid var(--line); }
 .by { margin-top: -4px; font-size: 11px; font-weight: 600; letter-spacing: .4px; color: var(--dim); }
 /* versão do app: pilulazinha embaixo do "by" */

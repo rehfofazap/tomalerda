@@ -19,6 +19,7 @@
     <div class="tbTitle" data-tauri-drag-region>
       <img src="icon64.png" alt="" class="tbIcon" data-tauri-drag-region />
       <span class="tbName" data-tauri-drag-region>tomalerda</span>
+      <span class="tbPage" id="tbPage" data-tauri-drag-region></span>
     </div>
     <!-- bolinhas no lado direito: fechar fica no canto -->
     <div class="lights">
@@ -65,7 +66,6 @@
       </div>
       <div class="gateRow">
         <label class="gateCheck"><input type="checkbox" id="gateRemember" checked /><span></span>Salvar conta neste PC</label>
-        <div class="gateKind" id="gateKind"><button data-v="user" class="on">Usuário</button><button data-v="bot">Bot</button></div>
       </div>
       <button class="gateEnter" id="gateEnter">Entrar <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       <p class="gateErr" id="gateErr"></p>
@@ -424,10 +424,6 @@
               <div class="inputRow">
                 <input id="token" type="password" placeholder="Cole seu token aqui" autocomplete="off" />
                 <button class="iconBtn" id="eyeBtn" title="Mostrar/ocultar"><i data-i="eye"></i></button>
-              </div>
-              <div class="segmented" id="tokenType">
-                <button data-v="user" class="on">Usuário</button>
-                <button data-v="bot">Bot</button>
               </div>
               <div class="switchRow">
                 <div><b>Lembrar neste PC</b><small>Guarda no Cofre de credenciais do Windows, protegido pela sua conta</small></div>

@@ -78,6 +78,7 @@ function go(page, focus) {
   $$(".navItem").forEach((b) => b.classList.toggle("active", b.dataset.page === page));
   $$(".page").forEach((p) => p.classList.toggle("active", p.dataset.page === page));
   $("pageTitle").textContent = PAGES[page].title;
+  $("tbPage").textContent = PAGES[page].title;
   $("pageSub").textContent = PAGES[page].sub;
   $("pageIcon").innerHTML = document.querySelector(`.navItem[data-page="${page}"] svg`).outerHTML;
   document.querySelector(".content").scrollTop = 0;
@@ -93,8 +94,22 @@ function go(page, focus) {
 }
 $$(".navItem").forEach((b) => b.addEventListener("click", () => go(b.dataset.page)));
 
-// menu recolhido (só ícones): o nome aparece ao passar o mouse; a escolha fica salva
-$$(".navItem").forEach((b) => (b.title = b.textContent.trim()));
+// menu recolhido (só ícones): o nome aparece num balãozinho ao lado; a escolha fica salva
+const navTip = document.createElement("div");
+navTip.className = "navTip";
+document.body.appendChild(navTip);
+$$(".navItem").forEach((b) => {
+  b.addEventListener("mouseenter", () => {
+    if (!$("sidebar").classList.contains("mini")) return;
+    const r = b.getBoundingClientRect();
+    navTip.textContent = b.textContent.trim();
+    navTip.style.left = `${r.right + 14}px`;
+    navTip.style.top = `${r.top + r.height / 2}px`;
+    navTip.classList.add("show");
+  });
+  b.addEventListener("mouseleave", () => navTip.classList.remove("show"));
+  b.addEventListener("click", () => navTip.classList.remove("show"));
+});
 function setMini(on) {
   $("sidebar").classList.toggle("mini", on);
   $("sideToggle").title = on ? "Abrir menu" : "Recolher menu";
@@ -608,7 +623,7 @@ async function gateEnter() {
   btn.disabled = true;
   $("gateErr").textContent = "";
   try {
-    await login(tk, $("gateKind").querySelector(".on").dataset.v === "bot", $("gateRemember").checked);
+    await login(tk, false, $("gateRemember").checked); // só conta de usuário (login por bot saiu na 0.1.14)
     $("gateToken").value = "";
     $("gateToken").type = "password";
   } catch (e) {
@@ -623,10 +638,8 @@ $("gateEye").addEventListener("click", () => {
   const t = $("gateToken");
   t.type = t.type === "password" ? "text" : "password";
 });
-$$("#gateKind button").forEach((b) => b.addEventListener("click", () => $$("#gateKind button").forEach((x) => x.classList.toggle("on", x === b))));
 $("token").addEventListener("keydown", (e) => e.key === "Enter" && !$("checkBtn").disabled && connect(true));
 
-$("tokenType").addEventListener("change", () => (state.tokenType = segVal("tokenType")));
 $("eyeBtn").addEventListener("click", () => {
   const t = $("token");
   t.type = t.type === "password" ? "text" : "password";
@@ -926,13 +939,13 @@ function star5(x, y, s, o, c = "#ffe14d") {
   return `<path transform='translate(${x} ${y}) scale(${s})' d='${d}z' fill='${c}' fill-opacity='${o}' stroke='${c}' stroke-opacity='${o}' stroke-width='2' stroke-linejoin='round'/>`;
 }
 // Tokyo Ghoul: lírio-aranha vermelho, olho vermelho no preto, centopeia, tentáculos e café
-function lily(x, y, s, o, r = 0) {
+function lily(x, y, s, o, r = 0, c = "#e3192b", c2 = "#ff4a55") {
   let p = "";
   for (let k = 0; k < 6; k++) {
     p += `<g transform='rotate(${k * 60})'>` +
-      `<path d='M0 0C2-5 7-10 5-19C4-23 0-22 1.5-19C3-11-1-5 0 0z' fill='#e3192b' fill-opacity='${o}'/>` +
-      `<path d='M0 0C-1-10 3-21 10-29' fill='none' stroke='#ff4a55' stroke-opacity='${o}' stroke-width='0.9'/>` +
-      `<circle cx='10' cy='-29' r='1.4' fill='#ff4a55' fill-opacity='${o}'/></g>`;
+      `<path d='M0 0C2-5 7-10 5-19C4-23 0-22 1.5-19C3-11-1-5 0 0z' fill='${c}' fill-opacity='${o}'/>` +
+      `<path d='M0 0C-1-10 3-21 10-29' fill='none' stroke='${c2}' stroke-opacity='${o}' stroke-width='0.9'/>` +
+      `<circle cx='10' cy='-29' r='1.4' fill='${c2}' fill-opacity='${o}'/></g>`;
   }
   return `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>${p}</g>`;
 }
@@ -960,20 +973,102 @@ const coffee = (x, y, s, o) =>
   `<path d='M-10-4h20v6a10 9 0 0 1-20 0z' fill='white' fill-opacity='${o * 0.5}'/>` +
   `<path d='M10-1a4 4 0 0 1 0 7M-15 11h30M-4-8q-3-4 0-7t0-7M3-8q-3-4 0-7'/></g>`;
 
+// Hello Kitty: laço vermelho, maçã, corações, florzinhas e estrelas
+const bow = (x, y, s, o, r = 0, c = "#ff3b6b") =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})' fill='${c}' fill-opacity='${o}'>` +
+  `<path d='M0 0C-5-9-19-12-19 0S-5 9 0 0zM0 0C5-9 19-12 19 0S5 9 0 0z'/>` +
+  `<path d='M-3 2-8 13-3 11zM3 2 8 13 3 11z'/><circle r='4.2' fill-opacity='${Math.min(1, o * 1.3)}'/>` +
+  `<path d='M-14-2C-11-5-7-5-5-2M14-2C11-5 7-5 5-2' fill='none' stroke='white' stroke-opacity='${o * 0.8}' stroke-width='1.2' stroke-linecap='round'/></g>`;
+const apple = (x, y, s, o, r = 0) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>` +
+  `<path d='M0-6C-6-11-15-8-15 2-15 12-7 18 0 15 7 18 15 12 15 2 15-8 6-11 0-6z' fill='#ff3b55' fill-opacity='${o}'/>` +
+  `<path d='M0-6Q1-12 4-15' fill='none' stroke='#8a4a2a' stroke-opacity='${Math.min(1, o * 1.6)}' stroke-width='1.6' stroke-linecap='round'/>` +
+  `<path d='M2-11Q9-17 13-11Q7-8 2-11z' fill='#6fd36b' fill-opacity='${Math.min(1, o * 1.4)}'/>` +
+  `<path d='M-9-1Q-9-5-6-6' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='1.6' stroke-linecap='round'/></g>`;
+const pinkHeart = (x, y, s, o, r = 0, c = "#ff8fbf") =>
+  `<path transform='translate(${x} ${y}) rotate(${r}) scale(${s})' d='M0 6C-5-2-15 1-12 10-10 15 0 22 0 22 0 22 10 15 12 10 15 1 5-2 0 6z' fill='${c}' fill-opacity='${o}'/>`;
+// Naruto: shuriken, kunai, tigela de lámen, folhas e pergaminho
+const shuriken = (x, y, s, o, r = 0) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>` +
+  `<path d='M0-18 4-4 18 0 4 4 0 18-4 4-18 0-4-4z' fill='white' fill-opacity='${o}'/>` +
+  `<circle r='3' fill='black' fill-opacity='.5'/></g>`;
+const kunai = (x, y, s, o, r = 0) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>` +
+  `<path d='M0-28 5.5-9 0-5-5.5-9z' fill='white' fill-opacity='${o}'/>` +
+  `<rect x='-1.8' y='-5' width='3.6' height='15' rx='1' fill='#ff8a1f' fill-opacity='${Math.min(1, o * 1.6)}'/>` +
+  `<circle cy='14.5' r='3.6' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='1.6'/></g>`;
+const ramen = (x, y, s, o) =>
+  `<g transform='translate(${x} ${y}) scale(${s})'>` +
+  `<path d='M-20 0h40a20 15 0 0 1-40 0z' fill='white' fill-opacity='${o}'/>` +
+  `<path d='M-17 5h34' stroke='#ff8a1f' stroke-opacity='${Math.min(1, o * 2)}' stroke-width='2'/>` +
+  `<path d='M-6-3 14-22M-1-2 19-20' stroke='white' stroke-opacity='${Math.min(1, o * 1.4)}' stroke-width='1.6' stroke-linecap='round'/>` +
+  `<path d='M-12-5q-3-4 0-8t0-8M-4-5q-3-4 0-8' fill='none' stroke='white' stroke-opacity='${o * 0.8}' stroke-width='1.4' stroke-linecap='round'/>` +
+  `<circle cx='8' cy='-1' r='4' fill='white' fill-opacity='${Math.min(1, o * 1.5)}'/>` +
+  `<path d='M8-1m-2 0a2 2 0 1 1 2 2' fill='none' stroke='#ff6aa0' stroke-opacity='.8' stroke-width='1'/></g>`;
+const leaf = (x, y, s, o, r = 0, c = "#7cd957") =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>` +
+  `<path d='M0 12C-10 4-10-8 0-14 10-8 10 4 0 12z' fill='${c}' fill-opacity='${o}'/>` +
+  `<path d='M0 12V-12' stroke='black' stroke-opacity='.25' stroke-width='1'/></g>`;
+const scroll = (x, y, s, o, r = 0) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>` +
+  `<rect x='-16' y='-7' width='32' height='14' rx='2' fill='white' fill-opacity='${o}'/>` +
+  `<rect x='-20' y='-8.5' width='5' height='17' rx='2.5' fill='#ff8a1f' fill-opacity='${Math.min(1, o * 1.8)}'/>` +
+  `<rect x='15' y='-8.5' width='5' height='17' rx='2.5' fill='#ff8a1f' fill-opacity='${Math.min(1, o * 1.8)}'/>` +
+  `<path d='M-9-2h18M-9 2h12' stroke='black' stroke-opacity='.3' stroke-width='1.2'/></g>`;
+// Homem-Aranha: aranhinha pendurada no fio e prédios no fim da tela
+const spider = (x, y, s, o, fio = 0) =>
+  `<g transform='translate(${x} ${y}) scale(${s})' stroke='white' stroke-opacity='${o}' stroke-width='1.4' fill='none' stroke-linecap='round'>` +
+  (fio ? `<path d='M0-6V${-fio}' stroke-width='.8'/>` : "") +
+  `<path d='M-3-2-10-8-13-4M-3 0-11-2-14 3M-3 2-10 6-12 11M-2 3-6 10-6 15M3-2 10-8 13-4M3 0 11-2 14 3M3 2 10 6 12 11M2 3 6 10 6 15'/>` +
+  `<ellipse cy='-2' rx='3.4' ry='4' fill='white' fill-opacity='${o}' stroke='none'/><ellipse cy='5' rx='4.4' ry='5.4' fill='white' fill-opacity='${o}' stroke='none'/></g>`;
+function skyline(w, h, o) {
+  let s = 7, x = 0, d = "";
+  const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+  while (x < w) {
+    const bw = 26 + rnd() * 40, bh = 60 + rnd() * 150;
+    d += `<rect x='${x.toFixed(0)}' y='${(h - bh).toFixed(0)}' width='${(bw - 3).toFixed(0)}' height='${bh.toFixed(0)}'/>`;
+    for (let wy = h - bh + 10; wy < h - 8; wy += 14) for (let wx = x + 5; wx < x + bw - 9; wx += 9)
+      if (rnd() > 0.62) d += `<rect x='${wx.toFixed(0)}' y='${wy.toFixed(0)}' width='3' height='5' fill='#ffd36e' fill-opacity='${Math.min(1, o * 4)}'/>`;
+    x += bw;
+  }
+  return svgUrl(w, h, `<g fill='white' fill-opacity='${o}'>${d}</g>`);
+}
+// Zero Two: flor de cerejeira rosa, pétalas caindo e estrelinhas
+function sakura(x, y, s, o, r = 0) {
+  let p = "";
+  for (let k = 0; k < 5; k++) p += `<path transform='rotate(${k * 72})' d='M0 0C-7-4-8-13-3-17L0-14 3-17C8-13 7-4 0 0z'/>`;
+  return `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})' fill='#ffb3c9' fill-opacity='${o}'>${p}` +
+    `<circle r='3' fill='#ff4f7a' fill-opacity='${Math.min(1, o * 1.8)}'/></g>`;
+}
+const pinkPetal = (x, y, s, o, r) =>
+  `<path transform='translate(${x} ${y}) rotate(${r}) scale(${s})' d='M0 0C-6-4-7-12-2-16L0-13 2-16C7-12 6-4 0 0z' fill='#ffb3c9' fill-opacity='${o}'/>`;
+// Dexter: lâmina de vidro com gota de sangue
+const slide = (x, y, s, o, r = 0) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>` +
+  `<rect x='-24' y='-8' width='48' height='16' rx='1.5' fill='white' fill-opacity='${o * 0.6}' stroke='white' stroke-opacity='${o * 1.5}' stroke-width='1'/>` +
+  `<circle cx='6' cy='0' r='4.5' fill='#ff2a36' fill-opacity='${Math.min(1, o * 3)}'/>` +
+  `<rect x='-21' y='-5' width='9' height='10' fill='white' fill-opacity='${o}'/></g>`;
+
 const PATTERNS = {
-  dexter: { img: svgUrl(320, 300, splat(60, 60, 1.3, 0.13) + blade(220, 70, 1.3, 0.09, -28) + syringe(90, 200, 1.4, 0.08, 32) + drop(250, 200, 1.1, 0.14) + drop(275, 235, 0.6, 0.12) + splat(250, 270, 0.6, 0.11) + blade(150, 285, 0.8, 0.07, 160) + drop(160, 130, 0.7, 0.12) + splat(20, 260, 0.5, 0.1)), size: "320px", pos: "0 0", rep: "repeat" },
+  // respingos, faca, seringa, lâminas de vidro com sangue e gotas
+  dexter: { img: svgUrl(360, 340, splat(60, 60, 1.4, 0.132) + blade(240, 70, 1.4, 0.096, -28) + syringe(95, 215, 1.5, 0.084, 32) + slide(250, 170, 1.1, 0.096, 12) + slide(270, 190, 1.1, 0.078, 22) + drop(160, 140, 0.9, 0.144) + drop(180, 165, 0.5, 0.12) + splat(280, 300, 0.7, 0.108) + blade(150, 315, 0.8, 0.072, 160) + drop(330, 40, 0.6, 0.12) + splat(25, 300, 0.5, 0.096)), size: "360px", pos: "0 0", rep: "repeat" },
   // mar aberto: leme, chapéu de palha, âncora, bússola, caveira pirata, gaivotas, ondas e o X do tesouro
   onepiece: { img: svgUrl(380, 360, helm(75, 75, 1.35, 0.14) + strawHat(275, 95, 1.6, 0.3, -12) + skull(285, 250, 1.1, 0.12) + anchor(85, 255, 1.25, 0.14, 14) + compass(185, 185, 0.95, 0.16) + wave(40, 170, 0.9, 0.16) + wave(330, 185, 0.8, 0.14) + wave(180, 330, 1.1, 0.16) + wave(345, 20, 0.7, 0.12) + wave(200, 290, 0.6, 0.12) + gull(180, 40, 1, 0.24) + gull(205, 56, 0.7, 0.2) + gull(345, 320, 0.8, 0.2) + treasureX(330, 345, 0.8, 0.22) + strawHat(160, 255, 0.6, 0.22, 16) + sparkle(130, 125, 0.5, 0.2) + sparkle(25, 335, 0.4, 0.18)), size: "380px", pos: "0 0", rep: "repeat" },
-  kitty: { img: svgUrl(240, 240, heart(40, 30, 1.3, 0.09, -12) + heart(165, 130, 0.9, 0.07, 14) + heart(95, 190, 0.55, 0.06) + sparkle(175, 45, 0.9, 0.14) + sparkle(55, 150, 0.6, 0.12) + sparkle(215, 210, 0.4, 0.1)), size: "240px", pos: "0 0", rep: "repeat" },
-  aranha: { img: web(), size: "900px", pos: "right top", rep: "no-repeat" },
-  zerotwo: { img: svgUrl(280, 280, flower(60, 60, 1.6, 0.08, 10) + flower(200, 190, 1.1, 0.07, -20) + petal(190, 60, 0.9, 0.08, 40) + petal(80, 220, 0.8, 0.07, -60) + petal(250, 120, 0.6, 0.06, 120) + petal(30, 140, 0.6, 0.06, 200)), size: "280px", pos: "0 0", rep: "repeat" },
-  naruto: { img: svgUrl(260, 260, spiral(70, 70, 1.6, 0.08) + spiral(195, 185, 1.1, 0.07) + spiral(205, 55, 0.6, 0.06) + spiral(55, 205, 0.5, 0.06)), size: "260px", pos: "0 0", rep: "repeat" },
+  // laços vermelhos, maçãs, corações rosa, florzinhas brancas e estrelinhas amarelas
+  kitty: { img: svgUrl(320, 300, bow(60, 55, 1.5, 0.189, -12) + apple(235, 80, 1.15, 0.18, 10) + pinkHeart(160, 150, 1, 0.135, -8) + flower(270, 220, 1.1, 0.072, 15) + bow(95, 225, 0.9, 0.162, 18) + star5(175, 35, 0.75, 0.189, "#ffe14d") + pinkHeart(20, 140, 0.6, 0.126, 12, "#ffffff") + apple(180, 270, 0.65, 0.153, -15) + star5(300, 150, 0.5, 0.171, "#ffe14d") + flower(30, 290, 0.7, 0.063) + sparkle(130, 95, 0.7, 0.135) + pinkHeart(290, 20, 0.55, 0.117)), size: "320px", pos: "0 0", rep: "repeat" },
+  // teia no canto, aranhas penduradas e prédios da cidade embaixo
+  aranha: { img: `${web()}, ${skyline(1200, 260, 0.035)}, ${svgUrl(420, 380, spider(90, 120, 1.3, 0.11, 120) + spider(300, 70, 0.9, 0.09, 70) + spider(220, 300, 0.7, 0.08, 90) + spider(380, 250, 0.6, 0.075, 60))}`, size: "900px, 1200px 260px, 420px", pos: "right top, left bottom, 0 0", rep: "no-repeat, repeat-x, repeat" },
+  // flores de cerejeira, pétalas caindo, corações e estrelinhas
+  zerotwo: { img: svgUrl(320, 300, sakura(65, 60, 1.5, 0.15, 10) + sakura(230, 195, 1.1, 0.13, -20) + pinkPetal(200, 55, 0.9, 0.16, 40) + pinkPetal(95, 215, 0.8, 0.15, -60) + pinkPetal(280, 110, 0.6, 0.14, 120) + pinkPetal(25, 150, 0.6, 0.14, 200) + pinkPetal(150, 130, 0.5, 0.13, 80) + pinkHeart(150, 260, 0.7, 0.11, -10, "#ff4f7a") + sparkle(285, 30, 0.6, 0.15) + sparkle(40, 270, 0.5, 0.13) + sakura(300, 285, 0.6, 0.11, 30)), size: "320px", pos: "0 0", rep: "repeat" },
+  // shuriken, kunai, lámen, folhas, pergaminho e espirais
+  naruto: { img: svgUrl(360, 340, shuriken(70, 65, 1.3, 0.1, 15) + kunai(260, 80, 1.2, 0.1, 35) + ramen(180, 200, 1.3, 0.1) + leaf(40, 220, 1.1, 0.16, -30) + leaf(320, 230, 0.8, 0.14, 40) + scroll(300, 310, 1, 0.1, -12) + spiral(170, 60, 0.8, 0.08) + spiral(70, 310, 0.6, 0.07) + shuriken(320, 160, 0.6, 0.09, -10) + kunai(110, 140, 0.7, 0.08, -50) + leaf(220, 20, 0.6, 0.13, 10)), size: "360px", pos: "0 0", rep: "repeat" },
   // espaço: saturno, planetas, portal verde, disco voador e muitas estrelas
   rick: { img: svgUrl(360, 360, stars(360, 360, 60, 7) + saturn(85, 80, 1.4, 0.2) + portal(270, 215, 1.2, 0.3) + planet(280, 60, 1, 0.17) + planet(70, 285, 0.7, 0.15) + saucer(160, 300, 1.15, 0.18, -10) + saturn(300, 330, 0.55, 0.15, 20) + sparkle(185, 140, 0.7, 0.28) + sparkle(335, 130, 0.45, 0.24) + sparkle(30, 180, 0.5, 0.24) + planet(185, 30, 0.45, 0.18)), size: "360px", pos: "0 0", rep: "repeat" },
   // terra de Ooo: arco-íris, espada, balinhas, estrelas coloridas e nuvens
   aventura: { img: svgUrl(360, 340, cloud(65, 55, 1.5, 0.12) + rainbow(255, 100, 1.25, 0.3) + sword(85, 215, 1.15, 0.2, -28) + candy(210, 235, 1.15, 0.32, 20) + star5(175, 45, 0.95, 0.38) + star5(320, 260, 0.65, 0.34, "#ff7eb6") + star5(30, 315, 0.55, 0.32, "#7cd957") + star5(150, 150, 0.45, 0.3, "#4cc3ff") + cloud(280, 300, 0.95, 0.1) + candy(335, 25, 0.75, 0.28, -30) + sparkle(120, 110, 0.7, 0.22) + sparkle(250, 175, 0.5, 0.2) + rainbow(120, 330, 0.6, 0.24) + dot(300, 200, 2, 0.3) + dot(40, 120, 1.6, 0.26)), size: "360px", pos: "0 0", rep: "repeat" },
   // lírios-aranha, olho vermelho, tentáculos vermelhos, centopeia, café e gotas
-  tokyoghoul: { img: svgUrl(380, 360, redEye(90, 80, 1.4, 0.2) + lily(275, 90, 1.25, 0.32, 15) + tendril(10, 235, 1.4, 0.26, -12) + tendril(25, 250, 1, 0.18, 8) + centipede(205, 265, 1, 0.13, -20) + coffee(320, 315, 1, 0.14) + drop(165, 175, 0.85, 0.22) + drop(345, 205, 0.5, 0.2) + lily(95, 320, 0.7, 0.26, -20) + redEye(320, 20, 0.6, 0.16) + drop(250, 30, 0.45, 0.18) + splat(190, 330, 0.5, 0.14)), size: "380px", pos: "0 0", rep: "repeat" },
+  // mais branco: lírios brancos, centopeia e café em branco; o vermelho só no olho, num lírio e nas gotas
+  tokyoghoul: { img: svgUrl(380, 360, redEye(90, 80, 1.3, 0.1) + lily(275, 90, 1.25, 0.18, 15, "#ffffff", "#ffffff") + tendril(10, 235, 1.3, 0.084, -12) + centipede(205, 265, 1, 0.132, -20) + coffee(320, 315, 1, 0.132) + drop(165, 175, 0.6, 0.08) + lily(95, 320, 0.7, 0.156, -20, "#ffffff", "#ffffff") + lily(190, 40, 0.55, 0.18, 40) + sparkle(320, 20, 0.6, 0.18) + sparkle(250, 190, 0.6, 0.18) + sparkle(40, 150, 0.45, 0.156)), size: "380px", pos: "0 0", rep: "repeat" },
 };
 
 const THEMES = ["preto", "rosa", "azul", "roxo", "vermelho", "cinza", "menta", "dourado", "oceano", "kitty", "aranha", "zerotwo", "naruto", "onepiece", "dexter", "rick", "aventura", "tokyoghoul"];
@@ -1135,33 +1230,60 @@ try {
 }
 
 // ================= atualização =================
-// confere ao abrir e a cada 6 horas; se tiver versão nova, aparece o botão no topo
-async function checkUpdate() {
-  try {
-    const v = await invoke("check_update");
-    if (!v) return;
-    $("updText").textContent = `Atualizar (v${v})`;
-    $("updBtn").hidden = false;
-  } catch (e) {
-    console.warn("atualização:", e);
-  }
-}
-$("updBtn").addEventListener("click", async () => {
+// Confere ao abrir, a cada 1 min e quando a janela volta pro foco (o latest.json tem
+// menos de 1 KB). Achou versão nova: instala sozinho assim que o app
+// estiver parado (sem processo rodando e sem modo ausente ligado) e reabre na hora.
+// O botão na barra lateral continua lá pra quem quiser atualizar na mão.
+const upd = { version: null, installing: false, failed: 0 };
+async function installUpdate(auto) {
+  if (upd.installing) return;
+  upd.installing = true;
   const btn = $("updBtn");
   btn.disabled = true;
   $("updText").textContent = "Baixando…";
+  if (auto) toast(`Atualizando pra v${upd.version}… o app reabre sozinho.`);
   const off = await window.__TAURI__.event.listen("update-progress", (e) => ($("updText").textContent = `Baixando ${e.payload}%`));
   try {
     await invoke("install_update"); // o app reabre sozinho no fim
   } catch (e) {
     off();
+    upd.installing = false;
+    upd.failed++;
     btn.disabled = false;
     $("updText").textContent = "Tentar de novo";
     toast(`Não deu pra atualizar: ${e}`);
   }
-});
+}
+const busy = () => state.running || (typeof idle !== "undefined" && idle.on);
+async function checkUpdate() {
+  if (upd.installing) return;
+  try {
+    const v = await invoke("check_update");
+    if (!v) return;
+    upd.version = v;
+    $("updText").textContent = `Atualizar (v${v})`;
+    $("updBtn").hidden = false;
+    // automático: só se não estiver no meio de nada e sem ter falhado 2x seguidas
+    if (!busy() && upd.failed < 2) installUpdate(true);
+  } catch (e) {
+    console.warn("atualização:", e);
+  }
+}
+$("updBtn").addEventListener("click", () => installUpdate(false));
 setTimeout(checkUpdate, 4000);
-setInterval(checkUpdate, 6 * 60 * 60 * 1000);
+// a cada minuto: se já sabe da versão nova (esperando um processo acabar), tenta instalar;
+// senão, confere no servidor
+setInterval(() => {
+  if (upd.version) { if (!upd.installing && !busy() && upd.failed < 2) installUpdate(true); }
+  else checkUpdate();
+}, 60 * 1000);
+// voltou pra janela: confere na hora (no máximo 1x a cada 20 s)
+let lastFocusCheck = 0;
+window.addEventListener("focus", () => {
+  if (Date.now() - lastFocusCheck < 20000) return;
+  lastFocusCheck = Date.now();
+  checkUpdate();
+});
 
 // ================= segurança da interface =================
 // sem menu do botão direito (exceto em campos de texto) e sem atalhos de recarregar/inspecionar
