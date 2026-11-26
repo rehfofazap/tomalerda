@@ -1051,7 +1051,8 @@ fn read_package(path: &str) -> Result<HashMap<String, PkgChannel>, String> {
             if entry.is_dir() {
                 continue;
             }
-            let name = entry.name().to_string();
+            // zip 9: nome inválido/estranho vira erro; esse arquivo só é pulado
+            let Ok(name) = entry.name().map(|n| n.to_string()) else { continue };
             if let Some((id, file)) = pkg_classify(&name) {
                 let mut text = String::new();
                 std::io::Read::read_to_string(&mut entry, &mut text).map_err(|e| format!("{name}: {e}"))?;
