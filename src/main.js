@@ -751,20 +751,113 @@ function stars(w, h, n, seed) {
   for (let k = 0; k < n; k++) out += dot((rnd() * w).toFixed(0), (rnd() * h).toFixed(0), (0.6 + rnd() * 1.1).toFixed(1), (0.12 + rnd() * 0.3).toFixed(2));
   return out;
 }
+// One Piece: leme, âncora, bússola, gaivotas, X do tesouro e chapéu de palha dourado
+function helm(x, y, s, o) {
+  let k = "";
+  for (let i = 0; i < 8; i++) {
+    const t = (i * Math.PI) / 4, c = Math.cos(t), n = Math.sin(t);
+    k += `<path d='M${(c * 5).toFixed(1)} ${(n * 5).toFixed(1)}L${(c * 20).toFixed(1)} ${(n * 20).toFixed(1)}'/>` +
+      `<circle cx='${(c * 22).toFixed(1)}' cy='${(n * 22).toFixed(1)}' r='2.8' fill='white' stroke='none'/>`;
+  }
+  return `<g transform='translate(${x} ${y}) scale(${s})' fill='none' stroke='white' stroke-opacity='${o}' fill-opacity='${o}' stroke-width='2.4'>` +
+    `<circle r='14'/><circle r='4.5'/>${k}</g>`;
+}
+const anchor = (x, y, s, o, r = 0) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='2.6' stroke-linecap='round'>` +
+  `<circle cy='-18' r='4'/><path d='M0-14V18M-9-8H9M-16 6Q-14 18 0 18Q14 18 16 6M-16 6l-4 4M-16 6l4 3M16 6l4 4M16 6l-4 3'/></g>`;
+const compass = (x, y, s, o) =>
+  `<g transform='translate(${x} ${y}) scale(${s})'>` +
+  `<circle r='17' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='1.6' stroke-dasharray='2 3'/>` +
+  `<path d='M0-22 4-4 22 0 4 4 0 22-4 4-22 0-4-4z' fill='white' fill-opacity='${o}'/>` +
+  `<path d='M0-22 4-4 0 0-4-4z' fill='#e0322f' fill-opacity='${Math.min(1, o * 2.4)}'/></g>`;
+const gull = (x, y, s, o) =>
+  `<path transform='translate(${x} ${y}) scale(${s})' d='M-10 0Q-5-7 0 0Q5-7 10 0' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='1.8' stroke-linecap='round'/>`;
+const strawHat = (x, y, s, o, r = 0) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>` +
+  `<ellipse cy='4' rx='23' ry='4.6' fill='#f5b922' fill-opacity='${o}'/>` +
+  `<path d='M-12 3a12 11 0 0 1 24 0z' fill='#f5b922' fill-opacity='${o}'/>` +
+  `<rect x='-10.6' y='-3.2' width='21.2' height='3.8' fill='#e0322f' fill-opacity='${Math.min(1, o * 1.5)}'/></g>`;
+const treasureX = (x, y, s, o) =>
+  `<g transform='translate(${x} ${y}) scale(${s})' fill='none' stroke-linecap='round'>` +
+  `<path d='M-40 14q14-16 26-6t22-4' stroke='white' stroke-opacity='${o * 0.8}' stroke-width='1.6' stroke-dasharray='3 4'/>` +
+  `<path d='M2-6 14 6M14-6 2 6' stroke='#e0322f' stroke-opacity='${Math.min(1, o * 2)}' stroke-width='3'/></g>`;
+// Hora de Aventura: arco-íris, espada, balinha, estrelas coloridas e nuvens
+function rainbow(x, y, s, o) {
+  const cs = ["#ff5a5a", "#ffa23a", "#ffe14d", "#7cd957", "#4cc3ff", "#a77bff"];
+  return `<g transform='translate(${x} ${y}) scale(${s})' fill='none' stroke-width='3.4' stroke-linecap='round'>` +
+    cs.map((c, i) => { const r = 32 - i * 3.4; return `<path d='M${-r} 0A${r} ${r} 0 0 1 ${r} 0' stroke='${c}' stroke-opacity='${o}'/>`; }).join("") + `</g>`;
+}
+const sword = (x, y, s, o, r = 0) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>` +
+  `<path d='M-3.2-30 0-37 3.2-30V6H-3.2z' fill='white' fill-opacity='${o}'/>` +
+  `<rect x='-11' y='6' width='22' height='4.4' rx='2.2' fill='#ffcf3a' fill-opacity='${Math.min(1, o * 1.6)}'/>` +
+  `<rect x='-2.3' y='10.4' width='4.6' height='12' rx='1.6' fill='#b0703c' fill-opacity='${Math.min(1, o * 1.8)}'/>` +
+  `<circle cy='24.5' r='3.2' fill='#ffcf3a' fill-opacity='${Math.min(1, o * 1.6)}'/></g>`;
+const candy = (x, y, s, o, r = 0) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>` +
+  `<path d='M-6 0-16-7-13 0-16 7zM6 0 16-7 13 0 16 7z' fill='#ff7eb6' fill-opacity='${o}'/>` +
+  `<circle r='7.5' fill='#ff7eb6' fill-opacity='${o}'/>` +
+  `<path d='M-5-4 3 6M-1-7 6 2' stroke='white' stroke-opacity='${o}' stroke-width='1.6' stroke-linecap='round'/></g>`;
+function star5(x, y, s, o, c = "#ffe14d") {
+  let d = "";
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 ? 4.4 : 10, t = -Math.PI / 2 + (i * Math.PI) / 5;
+    d += `${i ? "L" : "M"}${(Math.cos(t) * r).toFixed(1)} ${(Math.sin(t) * r).toFixed(1)}`;
+  }
+  return `<path transform='translate(${x} ${y}) scale(${s})' d='${d}z' fill='${c}' fill-opacity='${o}' stroke='${c}' stroke-opacity='${o}' stroke-width='2' stroke-linejoin='round'/>`;
+}
+// Tokyo Ghoul: lírio-aranha vermelho, olho vermelho no preto, centopeia, tentáculos e café
+function lily(x, y, s, o, r = 0) {
+  let p = "";
+  for (let k = 0; k < 6; k++) {
+    p += `<g transform='rotate(${k * 60})'>` +
+      `<path d='M0 0C2-5 7-10 5-19C4-23 0-22 1.5-19C3-11-1-5 0 0z' fill='#e3192b' fill-opacity='${o}'/>` +
+      `<path d='M0 0C-1-10 3-21 10-29' fill='none' stroke='#ff4a55' stroke-opacity='${o}' stroke-width='0.9'/>` +
+      `<circle cx='10' cy='-29' r='1.4' fill='#ff4a55' fill-opacity='${o}'/></g>`;
+  }
+  return `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>${p}</g>`;
+}
+const redEye = (x, y, s, o) =>
+  `<g transform='translate(${x} ${y}) scale(${s})'>` +
+  `<path d='M-21 0Q0-15 21 0Q0 15-21 0z' fill='black' fill-opacity='.85' stroke='white' stroke-opacity='${o}' stroke-width='1.4'/>` +
+  `<path d='M-15-2-9-1M-16 3-10 1.5M15-2 9-1M16 3 10 1.5' stroke='#e3192b' stroke-opacity='${Math.min(1, o * 2.5)}' stroke-width='0.9'/>` +
+  `<circle r='7.5' fill='#e3192b' fill-opacity='${Math.min(1, o * 3)}'/><circle r='2.6' fill='black'/></g>`;
+function centipede(x, y, s, o, r = 0) {
+  let b = "";
+  for (let i = 0; i < 12; i++) {
+    const cx = i * 7, cy = (Math.sin(i * 0.7) * 5).toFixed(1);
+    b += `<path d='M${cx} ${cy}l-2-7M${cx} ${cy}l-2 7' stroke='white' stroke-opacity='${o}' stroke-width='1'/>` +
+      `<ellipse cx='${cx}' cy='${cy}' rx='4.2' ry='3' fill='white' fill-opacity='${o}'/>`;
+  }
+  return `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>${b}` +
+    `<path d='M-3-1-10-6M-3 1-10 6' stroke='white' stroke-opacity='${o}' stroke-width='1'/></g>`;
+}
+const tendril = (x, y, s, o, r = 0) =>
+  `<g transform='translate(${x} ${y}) rotate(${r}) scale(${s})'>` +
+  `<path d='M0 0C18-6 30-24 60-31C42-18 31-3 6 9z' fill='#e3192b' fill-opacity='${o}'/>` +
+  `<path d='M4 3C20-4 34-18 53-27' fill='none' stroke='#ff7a82' stroke-opacity='${Math.min(1, o * 1.4)}' stroke-width='1'/></g>`;
+const coffee = (x, y, s, o) =>
+  `<g transform='translate(${x} ${y}) scale(${s})' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='1.8' stroke-linecap='round'>` +
+  `<path d='M-10-4h20v6a10 9 0 0 1-20 0z' fill='white' fill-opacity='${o * 0.5}'/>` +
+  `<path d='M10-1a4 4 0 0 1 0 7M-15 11h30M-4-8q-3-4 0-7t0-7M3-8q-3-4 0-7'/></g>`;
+
 const PATTERNS = {
   dexter: { img: svgUrl(320, 300, splat(60, 60, 1.3, 0.13) + blade(220, 70, 1.3, 0.09, -28) + syringe(90, 200, 1.4, 0.08, 32) + drop(250, 200, 1.1, 0.14) + drop(275, 235, 0.6, 0.12) + splat(250, 270, 0.6, 0.11) + blade(150, 285, 0.8, 0.07, 160) + drop(160, 130, 0.7, 0.12) + splat(20, 260, 0.5, 0.1)), size: "320px", pos: "0 0", rep: "repeat" },
-  onepiece: { img: svgUrl(300, 280, skull(70, 70, 1.3, 0.08) + hat(220, 190, 1.2, 0.08, -12) + hat(235, 55, 0.6, 0.07, 18) + skull(80, 215, 0.6, 0.07) + wave(160, 120, 1, 0.08) + wave(40, 150, 0.7, 0.07) + wave(260, 260, 0.8, 0.06) + sparkle(160, 245, 0.5, 0.12) + sparkle(150, 30, 0.4, 0.1)), size: "300px", pos: "0 0", rep: "repeat" },
+  // mar aberto: leme, chapéu de palha, âncora, bússola, caveira pirata, gaivotas, ondas e o X do tesouro
+  onepiece: { img: svgUrl(380, 360, helm(75, 75, 1.35, 0.14) + strawHat(275, 95, 1.6, 0.3, -12) + skull(285, 250, 1.1, 0.12) + anchor(85, 255, 1.25, 0.14, 14) + compass(185, 185, 0.95, 0.16) + wave(40, 170, 0.9, 0.16) + wave(330, 185, 0.8, 0.14) + wave(180, 330, 1.1, 0.16) + wave(345, 20, 0.7, 0.12) + wave(200, 290, 0.6, 0.12) + gull(180, 40, 1, 0.24) + gull(205, 56, 0.7, 0.2) + gull(345, 320, 0.8, 0.2) + treasureX(330, 345, 0.8, 0.22) + strawHat(160, 255, 0.6, 0.22, 16) + sparkle(130, 125, 0.5, 0.2) + sparkle(25, 335, 0.4, 0.18)), size: "380px", pos: "0 0", rep: "repeat" },
   kitty: { img: svgUrl(240, 240, heart(40, 30, 1.3, 0.09, -12) + heart(165, 130, 0.9, 0.07, 14) + heart(95, 190, 0.55, 0.06) + sparkle(175, 45, 0.9, 0.14) + sparkle(55, 150, 0.6, 0.12) + sparkle(215, 210, 0.4, 0.1)), size: "240px", pos: "0 0", rep: "repeat" },
   aranha: { img: web(), size: "900px", pos: "right top", rep: "no-repeat" },
   zerotwo: { img: svgUrl(280, 280, flower(60, 60, 1.6, 0.08, 10) + flower(200, 190, 1.1, 0.07, -20) + petal(190, 60, 0.9, 0.08, 40) + petal(80, 220, 0.8, 0.07, -60) + petal(250, 120, 0.6, 0.06, 120) + petal(30, 140, 0.6, 0.06, 200)), size: "280px", pos: "0 0", rep: "repeat" },
   naruto: { img: svgUrl(260, 260, spiral(70, 70, 1.6, 0.08) + spiral(195, 185, 1.1, 0.07) + spiral(205, 55, 0.6, 0.06) + spiral(55, 205, 0.5, 0.06)), size: "260px", pos: "0 0", rep: "repeat" },
   // espaço: saturno, planetas, portal verde, disco voador e muitas estrelas
   rick: { img: svgUrl(360, 360, stars(360, 360, 60, 7) + saturn(85, 80, 1.4, 0.2) + portal(270, 215, 1.2, 0.3) + planet(280, 60, 1, 0.17) + planet(70, 285, 0.7, 0.15) + saucer(160, 300, 1.15, 0.18, -10) + saturn(300, 330, 0.55, 0.15, 20) + sparkle(185, 140, 0.7, 0.28) + sparkle(335, 130, 0.45, 0.24) + sparkle(30, 180, 0.5, 0.24) + planet(185, 30, 0.45, 0.18)), size: "360px", pos: "0 0", rep: "repeat" },
-  // nuvens fofas e estrelinhas
-  aventura: { img: svgUrl(300, 260, cloud(70, 60, 1.5, 0.08) + cloud(220, 170, 1.1, 0.07) + cloud(250, 40, 0.6, 0.06) + sparkle(160, 95, 0.8, 0.14) + sparkle(40, 190, 0.6, 0.12) + sparkle(130, 230, 0.4, 0.1) + dot(280, 110, 2, 0.25) + dot(100, 140, 1.6, 0.2)), size: "300px", pos: "0 0", rep: "repeat" },
+  // terra de Ooo: arco-íris, espada, balinhas, estrelas coloridas e nuvens
+  aventura: { img: svgUrl(360, 340, cloud(65, 55, 1.5, 0.12) + rainbow(255, 100, 1.25, 0.3) + sword(85, 215, 1.15, 0.2, -28) + candy(210, 235, 1.15, 0.32, 20) + star5(175, 45, 0.95, 0.38) + star5(320, 260, 0.65, 0.34, "#ff7eb6") + star5(30, 315, 0.55, 0.32, "#7cd957") + star5(150, 150, 0.45, 0.3, "#4cc3ff") + cloud(280, 300, 0.95, 0.1) + candy(335, 25, 0.75, 0.28, -30) + sparkle(120, 110, 0.7, 0.22) + sparkle(250, 175, 0.5, 0.2) + rainbow(120, 330, 0.6, 0.24) + dot(300, 200, 2, 0.3) + dot(40, 120, 1.6, 0.26)), size: "360px", pos: "0 0", rep: "repeat" },
+  // lírios-aranha, olho vermelho, tentáculos vermelhos, centopeia, café e gotas
+  tokyoghoul: { img: svgUrl(380, 360, redEye(90, 80, 1.4, 0.2) + lily(275, 90, 1.25, 0.32, 15) + tendril(10, 235, 1.4, 0.26, -12) + tendril(25, 250, 1, 0.18, 8) + centipede(205, 265, 1, 0.13, -20) + coffee(320, 315, 1, 0.14) + drop(165, 175, 0.85, 0.22) + drop(345, 205, 0.5, 0.2) + lily(95, 320, 0.7, 0.26, -20) + redEye(320, 20, 0.6, 0.16) + drop(250, 30, 0.45, 0.18) + splat(190, 330, 0.5, 0.14)), size: "380px", pos: "0 0", rep: "repeat" },
 };
 
-const THEMES = ["preto", "rosa", "azul", "roxo", "vermelho", "cinza", "menta", "dourado", "oceano", "kitty", "aranha", "zerotwo", "naruto", "onepiece", "dexter", "rick", "aventura"];
+const THEMES = ["preto", "rosa", "azul", "roxo", "vermelho", "cinza", "menta", "dourado", "oceano", "kitty", "aranha", "zerotwo", "naruto", "onepiece", "dexter", "rick", "aventura", "tokyoghoul"];
 const STYLES = ["solido", "translucido", "vidro", "glass", "acrilico", "neon"];
 const LOOK_DEF = { theme: "rosa", style: "vidro", motion: true, splash: true, blur: 6, dim: 45 };
 let look = { ...LOOK_DEF };
@@ -778,7 +871,7 @@ const THEME_PIC = {
   kitty: "kitty.png",
   rosa: "temas/rosa.png", azul: "temas/azul.png", roxo: "temas/roxo.png", dourado: "temas/dourado.png",
   aranha: "temas/aranha.png", zerotwo: "temas/zerotwo.png", naruto: "temas/naruto.png",
-  rick: "temas/rick.png", aventura: "temas/aventura.png",
+  rick: "temas/rick.png", aventura: "temas/aventura.png", tokyoghoul: "temas/tokyoghoul.png",
   vermelho: "temas/vermelho.png", onepiece: "temas/onepiece.png", dexter: "temas/dexter.png",
   preto: "temas/preto.png", cinza: "temas/cinza.png", menta: "temas/menta.png", oceano: "temas/oceano.png",
 };

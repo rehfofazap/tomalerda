@@ -94,12 +94,17 @@
   --logo: linear-gradient(100deg, #ffd6d7, #ff8a8d 40%, #e23a42 85%);
   --bg: #1c0607; --b1: rgba(240, 90, 94, .5); --b2: rgba(255, 150, 150, .28); --b3: rgba(170, 25, 35, .4);
 }
-/* chapéu de palha: amarelo + faixa vermelha no preto */
+/* One Piece: mar aberto à noite (azul-marinho), chapéu de palha dourado, faixa vermelha */
 [data-theme="onepiece"] {
-  --a: #f2b21b; --a2: #ffe08a; --on-a: #1a1002;
-  --grad: linear-gradient(120deg, #f2b21b, #ffd45c 55%, #d42a2a);
-  --logo: linear-gradient(100deg, #fff1c4, #f2b21b 45%, #d42a2a 85%);
-  --bg: #0b0906; --b1: rgba(242, 178, 27, .42); --b2: rgba(212, 42, 42, .32); --b3: rgba(40, 110, 200, .22);
+  --a: #f5b922; --a2: #ffe39a; --on-a: #1a1002;
+  --grad: linear-gradient(120deg, #e0a312, #f5c63a 55%, #d42a2a);
+  --logo: linear-gradient(100deg, #fff1c4, #f5b922 45%, #e0322f 85%);
+  --bg: #061426; --b1: rgba(245, 185, 34, .38); --b2: rgba(212, 42, 42, .34); --b3: rgba(30, 120, 210, .42);
+}
+[data-theme="onepiece"] body::before {
+  background:
+    radial-gradient(1100px 380px at 50% 112%, rgba(26, 110, 190, .55), transparent 70%),
+    linear-gradient(180deg, #050d1c 0%, #071a33 55%, #0a2a4c 100%);
 }
 /* Dexter: preto de sala de plástico + vermelho-sangue */
 [data-theme="dexter"] {
@@ -108,11 +113,30 @@
   --logo: linear-gradient(100deg, #ffe3e4, #ff8a90 45%, #ff3b45 90%);
   --bg: #080505; --b1: rgba(200, 14, 28, .5); --b2: rgba(120, 5, 12, .45); --b3: rgba(255, 255, 255, .05);
 }
+/* Hora de Aventura: amarelo-alaranjado do cachorro, azul do céu, verde da grama e rosa doce */
 [data-theme="aventura"] {
-  --a: #3ec1f3; --a2: #ffe27a; --on-a: #04202e;
-  --grad: linear-gradient(120deg, #3ec1f3, #7ad8ff 45%, #ffd23f);
-  --logo: linear-gradient(100deg, #fff1a8, #ffd23f 35%, #3ec1f3 80%);
-  --bg: #061a2a; --b1: rgba(62, 193, 243, .5); --b2: rgba(255, 210, 63, .3); --b3: rgba(255, 120, 170, .26);
+  --a: #ffb21e; --a2: #9fe3ff; --on-a: #2a1800;
+  --grad: linear-gradient(120deg, #ff9f1a, #ffcf3a 50%, #4cc3ff);
+  --logo: linear-gradient(100deg, #fff3a8, #ffcf3a 30%, #ff9f1a 55%, #4cc3ff 90%);
+  --bg: #0a2a40; --b1: rgba(255, 178, 30, .42); --b2: rgba(124, 217, 87, .34); --b3: rgba(255, 126, 182, .3);
+}
+[data-theme="aventura"] body::before {
+  background:
+    radial-gradient(1200px 300px at 50% 115%, rgba(92, 190, 70, .5), transparent 70%),
+    linear-gradient(180deg, #0b3352 0%, #0c3b5c 60%, #123f35 100%);
+}
+/* Tokyo Ghoul: preto, branco e vermelho-sangue */
+[data-theme="tokyoghoul"] {
+  --a: #e3192b; --a2: #f4f4f4; --on-a: #fff;
+  --grad: linear-gradient(120deg, #8c0612, #e3192b 55%, #ff4a55);
+  --logo: linear-gradient(100deg, #ffffff, #f4f4f4 35%, #ff4a55 70%, #c40d1c);
+  --bg: #070606; --b1: rgba(227, 25, 43, .42); --b2: rgba(255, 255, 255, .08); --b3: rgba(120, 4, 14, .5);
+}
+[data-theme="tokyoghoul"] body::before {
+  background:
+    radial-gradient(900px 600px at 100% 0%, rgba(160, 8, 22, .35), transparent 65%),
+    radial-gradient(700px 500px at 0% 100%, rgba(255, 255, 255, .05), transparent 70%),
+    #070606;
 }
 
 /* ---------- estilos dos painéis ---------- */

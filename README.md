@@ -35,7 +35,7 @@ o token fica salvo no cofre do windows, não vai pra lugar nenhum além do próp
 
 tem 17 temas, cada um com cor, fundo e ícone próprio (o ícone da barra de tarefas muda junto):
 
-preto, rosa, azul, roxo, vermelho, cinza, menta, dourado, oceano, hello kitty, homem-aranha, zero two, naruto, one piece, dexter, rick and morty e hora de aventura
+preto, rosa, azul, roxo, vermelho, cinza, menta, dourado, oceano, hello kitty, homem-aranha, zero two, naruto, one piece, dexter, rick and morty, hora de aventura e tokyo ghoul
 
 <div align="center">
 <img src="docs/temas.png" width="820" alt="temas" />
