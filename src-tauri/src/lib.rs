@@ -327,6 +327,38 @@ fn set_theme_icon(app: AppHandle, theme: String) -> Result<(), String> {
     Ok(())
 }
 
+/// "Criar meu perfil": abre tomalerda.com/criar com um código que só o app gera.
+/// O código é preso à conta do Discord conectada e vence em poucas horas, então
+/// copiar o link não serve pra outra pessoa. A chave entra só na hora de compilar
+/// (TOMALERDA_PERFIL_CHAVE), não fica no código-fonte.
+#[tauri::command]
+async fn link_criar_perfil(token: String, is_bot: bool) -> Result<(), String> {
+    use hmac::{Hmac, Mac};
+    let chave = option_env!("TOMALERDA_PERFIL_CHAVE").filter(|c| !c.is_empty())
+        .ok_or("Esta versão do app não consegue criar perfil. Atualize o tomalerda.")?;
+    if is_bot {
+        return Err("Entre com a sua conta (não com bot) pra criar o perfil.".into());
+    }
+    let eu = discord::Client::new(&token, false, None)?.me().await?;
+    let agora = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_err(|e| e.to_string())?.as_secs();
+    let mut mac = Hmac::<sha2::Sha256>::new_from_slice(chave.as_bytes()).map_err(|e| e.to_string())?;
+    mac.update(format!("criar:{}:{}", eu.id, agora).as_bytes());
+    let assinatura: String = mac.finalize().into_bytes().iter().take(16).map(|b| format!("{b:02x}")).collect();
+    abrir_no_navegador(&format!("https://tomalerda.com/criar#app=v1.{}.{}.{}", eu.id, agora, assinatura));
+    Ok(())
+}
+
+fn abrir_no_navegador(url: &str) {
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::UI::Shell::ShellExecuteW;
+        use windows_sys::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
+        let w = |s: &str| s.encode_utf16().chain(std::iter::once(0)).collect::<Vec<u16>>();
+        let (op, alvo) = (w("open"), w(url));
+        unsafe { ShellExecuteW(std::ptr::null_mut(), op.as_ptr(), alvo.as_ptr(), std::ptr::null(), std::ptr::null(), SW_SHOWNORMAL) };
+    }
+}
+
 fn show_main(app: &AppHandle) {
     if let Some(w) = app.get_webview_window("main") {
         let _ = w.show();
@@ -382,7 +414,8 @@ pub fn run() {
             load_token,
             forget_token,
             check_update,
-            install_update
+            install_update,
+            link_criar_perfil
         ])
         .run(tauri::generate_context!())
         .expect("erro ao iniciar o aplicativo");

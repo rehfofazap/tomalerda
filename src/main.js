@@ -780,6 +780,21 @@ $("checkBtn").addEventListener("click", async () => {
   await connect(true);
 });
 
+// "Criar meu perfil": o app gera um código preso à sua conta e abre o site
+$("perfilBtn").addEventListener("click", async () => {
+  if (!state.token) { toast("Conecte sua conta em Conta e token primeiro."); go("settings"); return; }
+  const b = $("perfilBtn");
+  b.disabled = true;
+  try {
+    await invoke("link_criar_perfil", { token: state.token, isBot: state.tokenType === "bot" });
+    toast("Abrindo o tomalerda.com no navegador…");
+  } catch (e) {
+    toast(String(e).slice(0, 160), 5000);
+  } finally {
+    b.disabled = false;
+  }
+});
+
 function showUser(u) {
   const name = u.global_name || u.username;
   $("account").textContent = `Conectado como ${name}.`;
