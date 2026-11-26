@@ -1366,3 +1366,7 @@ label.mini input:checked + span::after { content: ""; width: 4px; height: 8px; b
 .updTxt small { font-size: 11px; color: var(--muted); white-space: nowrap; }
 .updCard:disabled { animation: none; cursor: progress; }
 @keyframes pulsar { 0% { box-shadow: 0 0 0 0 var(--glow); } 70%, 100% { box-shadow: 0 0 0 10px transparent; } }
+
+.langSel { padding: 8px 12px; border: 0; border-radius: 10px; color: var(--txt, #fff); background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); font: inherit; cursor: pointer; }
+.langSel option { color: #111; }
+
