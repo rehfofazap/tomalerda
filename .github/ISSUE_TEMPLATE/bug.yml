@@ -1,0 +1,38 @@
+name: 🐞 algo deu errado
+description: botão que não funciona, mensagem que não apagou, tela quebrada...
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **nunca cola seu token aqui.** se aparecer em algum print, apaga antes de mandar.
+  - type: input
+    id: versao
+    attributes:
+      label: versão do app
+      description: aparece embaixo do nome "tomalerda", no menu do lado
+      placeholder: "0.1.16"
+    validations:
+      required: true
+  - type: textarea
+    id: oque
+    attributes:
+      label: o que aconteceu?
+      placeholder: cliquei em "PVs e DMs abertas", ele contou 300 mensagens mas parou em 120...
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: o que era pra acontecer?
+  - type: textarea
+    id: registro
+    attributes:
+      label: registro (painel atividade)
+      description: copia as últimas linhas do "registro" do lado direito, se tiver erro lá
+      render: text
+  - type: input
+    id: windows
+    attributes:
+      label: windows
+      placeholder: "windows 11 / windows 10"

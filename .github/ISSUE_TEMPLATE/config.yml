@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 falha de segurança
+    url: https://github.com/rehfofazap/tomalerda/security/advisories/new
+    about: manda por aqui (privado), não abre issue pública
+  - name: ⬇️ baixar o tomalerda
+    url: https://rehbet.com.br/tomalerda
+    about: página de download
