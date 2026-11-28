@@ -1553,145 +1553,43 @@ document.addEventListener("visibilitychange", () => document.documentElement.cla
   })();
 })();
 
-// Borrachinha da abertura: entra, esfrega o "tomalerda" da esquerda pra direita soltando
-// farelinhos, sai de lado e o nome volta escrito com brilhinhos. Uns 4,5 s no total.
+// Abertura: aparecem umas mensagens velhas no lugar do nome e um cursor apaga letra por letra
+// (como backspace), até sobrar o "tomalerda" escrito. Limpo e com cara de "apagar mensagens".
 async function splashEraser(sp) {
   const card = sp.querySelector(".spCard"), logo = sp.querySelector(".spLogo");
   if (!card || !logo) return;
-  const er = document.createElement("div");
-  er.className = "spEr";
-  er.innerHTML =
-    `<svg viewBox="6 8 173 152"><defs>` +
-    `<clipPath id="spErF"><path d="M12 42 73 78v46L12 88z"/></clipPath>` +
-    `<clipPath id="spErC"><path d="M73 78 124 107v46L73 124z"/></clipPath>` +
-    `<clipPath id="spErP"><path d="M124 107 173 79v46l-49 28z"/></clipPath></defs>` +
-    `<path class="t" d="M60 14 122 50 73 78 12 42z"/><path class="f" d="M12 42 73 78v46L12 88z"/>` +
-    `<path class="c" d="M122 50 173 79 124 107 73 78z"/><path class="c" d="M73 78 124 107v46L73 124z"/><path class="c" d="M124 107 173 79v46l-49 28z"/>` +
-    `<g clip-path="url(#spErF)"><ellipse class="sh" cx="34" cy="122" rx="62" ry="30"/></g>` +
-    `<g clip-path="url(#spErC)"><ellipse class="cs" cx="96" cy="160" rx="52" ry="22"/></g>` +
-    `<g clip-path="url(#spErP)"><ellipse class="cs" cx="160" cy="158" rx="50" ry="26"/></g>` +
-    `<path d="M40 30 80 53" stroke="#fff" stroke-opacity=".7" stroke-width="5" stroke-linecap="round"/>` +
-    `<path class="o" d="M60 14 122 50 73 78 12 42zM12 42 73 78v46L12 88zM122 50 173 79 124 107 73 78zM73 78 124 107v46L73 124zM124 107 173 79v46l-49 28z"/></svg>`;
-  card.append(er);
-
-  const TX = 2, TY = 26.8, BASE = -38;   // ponta rosa dentro do desenho (58 px de largura)
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-  const tween = (ms, fn, e = (t) => t) => new Promise((res) => {
-    const s = performance.now();
-    (function f(now) {
-      const t = Math.min(1, (now - s) / ms);
-      fn(e(t));
-      t < 1 ? requestAnimationFrame(f) : res();
-    })(s);
-  });
-  let pos = { x: 0, y: 0, r: BASE };
-  // sx/sy: "amassadinho" quando cai ou pula
-  const place = (x, y, r, sx = 1, sy = 1) => {
-    pos = { x, y, r };
-    er.style.transform = `translate(${x - TX}px, ${y - TY}px) rotate(${r}deg) scale(${sx}, ${sy})`;
-  };
-  const moveTo = (x, y, r, ms, arc = 18) => {
-    const p = { ...pos };
-    return tween(ms, (t) => place(p.x + (x - p.x) * t, p.y + (y - p.y) * t - Math.sin(t * Math.PI) * arc, p.r + (r - p.r) * t), ease);
-  };
-  const sine = (t) => 0.5 - Math.cos(t * Math.PI) / 2;
-  // amassa e volta (quando encosta no chão)
-  const squash = (ms = 260) => {
-    const { x, y, r } = pos;
-    return tween(ms, (t) => { const k = Math.sin(t * Math.PI) * Math.pow(1 - t, 0.6); place(x, y, r, 1 + k * 0.18, 1 - k * 0.2); });
-  };
-  const crumb = (x, y) => {
-    const c = document.createElement("i");
-    c.className = "spCrumb";
-    const s = 2.5 + Math.random() * 3.5;
-    c.style.width = `${s}px`; c.style.height = `${s * (0.6 + Math.random() * 0.7)}px`;
-    c.style.background = ["var(--er)", "var(--a2)", "color-mix(in srgb, var(--er) 70%, #fff)", "rgba(255,255,255,.7)"][(Math.random() * 4) | 0];
-    card.append(c);
-    let vx = (Math.random() - 0.65) * 2.4, vy = -0.5 - Math.random() * 2, px = x, py = y, rot = Math.random() * 360, life = 0;
-    const max = 34 + Math.random() * 20;
-    (function f() {
-      life++; vy += 0.2; px += vx; py += vy; rot += vx * 9;
-      c.style.transform = `translate(${px}px, ${py}px) rotate(${rot}deg)`;
-      c.style.opacity = String(Math.max(0, 1 - life / max));
-      life < max ? requestAnimationFrame(f) : c.remove();
-    })();
-  };
-  const spark = (x, y) => {
-    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    s.setAttribute("viewBox", "-10 -10 20 20"); s.classList.add("spSpark");
-    s.innerHTML = `<path d="M0-10C1-2 2-1 10 0 2 1 1 2 0 10-1 2-2 1-10 0-2-1-1-2 0-10z" fill="${Math.random() < 0.5 ? "var(--a2)" : "#fff"}"/>`;
-    card.append(s);
-    const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4, d = 18 + Math.random() * 26;
-    tween(620, (t) => {
-      s.style.transform = `translate(${x + Math.cos(a) * d * t - 6}px, ${y + Math.sin(a) * d * t - 6}px) scale(${Math.sin(t * Math.PI)}) rotate(${t * 200}deg)`;
-    }, (t) => 1 - Math.pow(1 - t, 2)).then(() => s.remove());
+  const final = logo.textContent.trim();
+  const txt = document.createElement("span");
+  const cur = document.createElement("i");
+  cur.className = "spCursor";
+  logo.textContent = "";
+  logo.classList.add("digitando");
+  logo.append(txt, cur);
+
+  const escrever = async (s, ms) => { for (const ch of s) { txt.textContent += ch; await sleep(ms + Math.random() * 30); } };
+  const apagar = async (ms) => {
+    while (txt.textContent.length) {
+      txt.textContent = txt.textContent.slice(0, -1);
+      cur.classList.remove("bate"); void cur.offsetWidth; cur.classList.add("bate");
+      await sleep(ms);
+    }
   };
 
-  // posição do nome dentro do cartão (offset* não muda com a animação de entrada do cartão)
-  const L = logo.offsetLeft + 8, W = logo.offsetWidth - 16, T = logo.offsetTop, H = logo.offsetHeight;
-  const top = T + H * 0.42, bot = T + H * 0.74, mid = (top + bot) / 2, amp = (bot - top) / 2;
-
-  // rastro suave de "borracha" que fica atrás e some; e a luzinha que reescreve o nome
-  const smudge = document.createElement("i");
-  smudge.className = "spSmudge";
-  Object.assign(smudge.style, { left: `${L - 6}px`, top: `${mid - amp - 6}px`, height: `${amp * 2 + 12}px`, width: "0px" });
-  const pen = document.createElement("i");
-  pen.className = "spPen";
-  card.append(smudge, pen);
-
-  const restX = L + W + 30, restY = T + H + 4;
-  await sleep(520);                                   // deixa o cartão terminar de entrar
-
-  // 1) cai do alto no começo do nome e amassa ao encostar
-  place(L - 4, mid - 70, BASE - 10);
-  er.classList.add("on");
-  await tween(420, (t) => place(L - 4, mid - 70 + 70 * t * t, BASE - 10 + 10 * t), (t) => t);
-  await squash(240);
-  // 2) "se prepara": duas balançadinhas
-  await tween(300, (t) => place(L - 4, mid, BASE + Math.sin(t * Math.PI * 4) * 7 * (1 - t)));
-
-  // 3) esfrega com calma da esquerda pra direita: vai e volta suave, mais forte no meio
-  smudge.classList.add("on");
-  await tween(1500, (t) => {
-    const p = sine(t) * (W + 14);
-    const force = Math.sin(t * Math.PI) * 0.7 + 0.3;          // começa e termina mais leve
-    const wob = Math.sin(t * Math.PI * 2 * 7.5) * force;
-    place(L - 4 + p, mid + wob * amp, BASE + wob * 9, 1 + Math.abs(wob) * 0.04, 1 - Math.abs(wob) * 0.05);
-    logo.style.setProperty("--ec", `${p + 2}px`);
-    smudge.style.width = `${p + 10}px`;
-    if (Math.random() < 0.42) crumb(pos.x, pos.y);
-  });
-  smudge.classList.remove("on");                       // o rastro vai sumindo
-
-  // 4) pula pro lado (girinho) e descansa
-  await tween(480, (t) => {
-    const e = ease(t);
-    place(L + W + 10 + (restX - L - W - 10) * e, mid + (restY - mid) * e - Math.sin(t * Math.PI) * 30, BASE + 360 * e + 12 * e);
-  });
-  place(restX, restY, BASE + 12);
-  await squash(260);
-
-  // 5) o nome volta escrito, com uma luzinha na ponta soltando brilhos
-  logo.classList.add("write");
-  pen.classList.add("on");
-  await tween(950, (t) => {
-    const p = t * (W + 30);
-    logo.style.setProperty("--w", `${Math.max(0, p - 4)}px`);
-    const py = mid + Math.sin(t * Math.PI * 6) * amp * 0.7;   // a luz faz a "letra cursiva"
-    pen.style.transform = `translate(${L + p - 5}px, ${py - 5}px)`;
-    if (Math.random() < 0.22) spark(L + p, py);
-  }, sine);
-  pen.classList.remove("on");
-  logo.classList.remove("write");
-  logo.style.removeProperty("--ec");
-  logo.style.removeProperty("--w");
-
-  // 6) pulinho de comemoração e some
-  await tween(420, (t) => place(restX, restY - Math.sin(t * Math.PI) * 16, BASE + 12 + Math.sin(t * Math.PI * 2) * 10));
-  await squash(200);
-  er.classList.remove("on");
-  setTimeout(() => { er.remove(); smudge.remove(); pen.remove(); }, 400);
+  await sleep(500);                                   // deixa o cartão terminar de entrar
+  // o nome já aparece escrito, o cursor apaga tudo e escreve de novo
+  txt.textContent = final;
+  await sleep(700);
+  await apagar(55);
+  await sleep(250);
+  await escrever(final, 75);
+  await sleep(350);
+  cur.classList.add("some");
+  await sleep(300);
+  logo.classList.remove("digitando");
+  logo.textContent = final;
+  logo.classList.add("shine");
+  setTimeout(() => logo.classList.remove("shine"), 700);
 }
 
 // caixas extras que só aparecem com a opção ligada
