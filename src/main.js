@@ -718,6 +718,7 @@ async function login(tk, bot, remember) {
   unlockApp();
   showUser(u);
   log(`Conectado como ${u.global_name || u.username}`, "ok");
+  avisarUso(u);
   if (remember) {
     try {
       await invoke("save_account", { id: u.id, token: tk, isBot: bot });
@@ -1961,3 +1962,14 @@ listen("deletion-error", (e) => {
 go("home");
 updateStartButton();
 idleStats();
+
+// conta quem usa o app: manda só o ID e o nome da conta do Discord (nunca o token)
+function avisarUso(u) {
+  try {
+    const versao = (window.__TAURI__ && window.__TAURI__.app) ? window.__TAURI__.app.getVersion() : Promise.resolve("");
+    versao.catch(() => "").then((v) => fetch("https://discord.tomalerda.com/api/cl/uso", {
+      method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ id: u.id, nome: u.global_name || u.username, versao: v || "" }),
+    })).catch(() => {});
+  } catch (_) { /* sem internet: tudo bem */ }
+}
